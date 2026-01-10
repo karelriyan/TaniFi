@@ -1,0 +1,65 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id        String   @id @default(cuid())
+  phoneHash String   @unique
+  createdAt DateTime @default(now())
+
+  projects  Project[]
+}
+
+model UssdSession {
+  id        String   @id @default(cuid())
+  sessionId String   @unique
+  phoneHash String
+  state     String
+  payload   Json?
+  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now())
+}
+
+model Project {
+  id        String   @id @default(cuid())
+  userId    String
+  amount    Int
+  status    String   @default("created")
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id])
+  txs       Transaction[]
+}
+
+model Transaction {
+  id        String   @id @default(cuid())
+  projectId String
+  kind      String
+  status    String   @default("pending")
+  txHash    String?
+  createdAt DateTime @default(now())
+
+  project   Project  @relation(fields: [projectId], references: [id])
+}
+
+model UssdAudit {
+  id           String   @id @default(cuid())
+  requestId    String
+  sessionId    String
+  phoneHash    String
+  text         String?
+  stateBefore  String
+  stateAfter   String
+  responseType String
+  responseText String
+  createdAt    DateTime @default(now())
+
+  @@index([sessionId])
+  @@index([phoneHash])
+  @@index([createdAt])
+}
+

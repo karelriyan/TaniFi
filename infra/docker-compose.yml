@@ -1,0 +1,21 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: tanifi_postgres
+    environment:
+      POSTGRES_USER: tanifi
+      POSTGRES_PASSWORD: tanifi
+      POSTGRES_DB: tanifi_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - tanifi_pg:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7
+    container_name: tanifi_redis
+    ports:
+      - "6379:6379"
+
+volumes:
+  tanifi_pg:
