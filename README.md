@@ -12,17 +12,17 @@ Built for regions with **limited internet access**, TaniFi bridges **Telecom inf
 
 ## 📖 Table of Contents
 
-* [The Problem](#-the-problem)
-* [The Solution](#-the-solution)
-* [How It Works](#️-how-it-works)
-* [Architecture](#-architecture)
-* [Key Features](#-key-features)
-* [Tech Stack](#-tech-stack)
-* [Pilot Project: Banyumas](#-pilot-project-banyumas)
-* [Getting Started](#-getting-started)
-* [Smart Contract Addresses](#-smart-contract-addresses)
-* [License](#-license)
-* [Team](#-team)
+- [The Problem](#-the-problem)
+- [The Solution](#-the-solution)
+- [How It Works](#️-how-it-works)
+- [Architecture](#-architecture)
+- [Key Features](#-key-features)
+- [Tech Stack](#-tech-stack)
+- [Pilot Project: Banyumas](#-pilot-project-banyumas)
+- [Getting Started](#-getting-started)
+- [Smart Contract Addresses](#-smart-contract-addresses)
+- [License](#-license)
+- [Team](#-team)
 
 ---
 
@@ -36,7 +36,7 @@ Over **40% of rural areas** suffer from poor or no internet access. Most farmers
 
 ### 2. Predatory Financing
 
-Farmers often depend on *tengkulak* (informal lenders) charging **up to 20% monthly interest**, trapping them in cycles of debt.
+Farmers often depend on _tengkulak_ (informal lenders) charging **up to 20% monthly interest**, trapping them in cycles of debt.
 
 ### 3. Trust Deficit
 
@@ -48,9 +48,9 @@ Several centralized agritech platforms collapsed due to **opaque fund management
 
 TaniFi introduces a **Hybrid USSD–Blockchain Protocol** that is:
 
-* **Accessible** — works on any phone, no internet required
-* **Trustless** — transparent, immutable accounting
-* **Sharia-Compliant** — profit-sharing instead of interest
+- **Accessible** — works on any phone, no internet required
+- **Trustless** — transparent, immutable accounting
+- **Sharia-Compliant** — profit-sharing instead of interest
 
 ### Core Principles
 
@@ -81,7 +81,7 @@ TaniFi introduces a **Hybrid USSD–Blockchain Protocol** that is:
 2. Funds are disbursed via verified, closed-loop vendors
 3. After harvest, revenue is deposited
 4. Smart contract distributes profit automatically
-   *(e.g. 70% Investor / 30% Farmer)*
+   _(e.g. 70% Investor / 30% Farmer)_
 
 ---
 
@@ -114,12 +114,12 @@ graph TD
 
 ## 🚀 Key Features
 
-* 📱 **USSD Interface** — Works on any phone, zero internet dependency
-* ⛽ **Gasless Transactions** — ERC-4337 abstraction for farmers
-* 🤝 **Musyarakah Vault** — Automated profit-sharing logic
-* 🧾 **Audit Trail** — Every request logged in Postgres (USSD audit log)
-* 🔁 **Transaction Lifecycle** — Pending → confirmed (mocked for MVP)
-* 🇮🇩 **IDR-Based Accounting** — Minimizes volatility exposure
+- 📱 **USSD Interface** — Works on any phone, zero internet dependency
+- ⛽ **Gasless Transactions** — ERC-4337 abstraction for farmers
+- 🤝 **Musyarakah Vault** — Automated profit-sharing logic
+- 🧾 **Audit Trail** — Every request logged in Postgres (USSD audit log)
+- 🔁 **Transaction Lifecycle** — Pending → confirmed (mocked for MVP)
+- 🇮🇩 **IDR-Based Accounting** — Minimizes volatility exposure
 
 ---
 
@@ -127,21 +127,21 @@ graph TD
 
 ### Backend
 
-* **Node.js**, **NestJS**
-* **PostgreSQL** (financial & audit data)
-* **Redis** (USSD session state)
-* **Prisma ORM**
+- **Node.js**, **NestJS**
+- **PostgreSQL** (financial & audit data)
+- **Redis** (USSD session state)
+- **Prisma ORM**
 
 ### Blockchain
 
-* **Lisk Layer 2**
-* **Solidity**, **Foundry**
-* **ERC-4337 Account Abstraction**
+- **Lisk Layer 2**
+- **Solidity**, **Foundry**
+- **ERC-4337 Account Abstraction**
 
 ### Infrastructure
 
-* **Docker**
-* **USSD Gateway Simulator** (hackathon mode)
+- **Docker**
+- **USSD Gateway Simulator** (hackathon mode)
 
 ---
 
@@ -159,10 +159,10 @@ Farmers receive working capital instantly when delivering sugar to cooperatives,
 
 ### Prerequisites
 
-* Node.js v18+
-* Docker
-* PostgreSQL
-* Redis
+- Node.js v18+
+- Docker
+- PostgreSQL
+- Redis
 
 ### 1. Clone Repository
 
@@ -192,10 +192,12 @@ Invoke-RestMethod -Uri http://localhost:3000/v1/hooks/ussd \
 
 ## 🔗 Smart Contract Addresses (Testnet)
 
-| Contract  | Address |
-| --------- | ------- |
-| TaniVault | `0x...` |
-| IDRX Mock | `0x...` |
+| Contract  | Address                                                                                |
+| --------- | -------------------------------------------------------------------------------------- |
+| TaniVault | `0x66403a9bF78b9732169a0099a311f995427c24Dd`                                           |
+|           | https://sepolia-blockscout.lisk.com/address/0x66403a9bF78b9732169a0099a311f995427c24Dd |
+|           |                                                                                        |
+| IDRX Mock | `0x...`                                                                                |
 
 ---
 
@@ -215,6 +217,6 @@ Universitas Jenderal Soedirman
 
 ---
 
-> *“Empowering the hands that feed the nation — one block at a time.”*
+> _“Empowering the hands that feed the nation — one block at a time.”_
 
 ---
