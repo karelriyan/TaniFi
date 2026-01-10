@@ -205,11 +205,13 @@ MIT License — see [LICENSE](LICENSE)
 
 ---
 
-## 👥 Team
+## 👤 Developer
 
 Built for **Lisk Builders Challenge – Round 3**
 
 Solo Developer: Karel Tsalasatir Riyan
+
+Universitas Jenderal Soedirman
 
 ---
 
