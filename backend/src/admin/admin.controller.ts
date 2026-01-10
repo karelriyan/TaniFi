@@ -1,3 +1,7 @@
+/**
+ * Admin-only read endpoints for operational visibility.
+ * Provides a paged view of recent USSD audit records.
+ */
 import { Controller, Get, Query } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 

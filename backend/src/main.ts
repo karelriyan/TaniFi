@@ -1,3 +1,9 @@
+/**
+ * Application bootstrap for the HTTP API.
+ * - Creates the Nest app from AppModule.
+ * - Binds to PORT (default 3000) and listens on all interfaces.
+ * - Logs the local URL once ready.
+ */
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 

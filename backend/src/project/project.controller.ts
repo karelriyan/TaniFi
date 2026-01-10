@@ -1,3 +1,7 @@
+/**
+ * Public project status endpoints.
+ * Returns the latest known project and transaction state for a given ID.
+ */
 import { Controller, Get, Param } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 

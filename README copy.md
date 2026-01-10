@@ -15,12 +15,10 @@ Built for regions with **limited internet access**, TaniFi bridges **Telecom inf
 - [The Problem](#-the-problem)
 - [The Solution](#-the-solution)
 - [How It Works](#️-how-it-works)
-- [Architecture](#-architecture)
 - [Key Features](#-key-features)
 - [Tech Stack](#-tech-stack)
 - [Pilot Project: Banyumas](#-pilot-project-banyumas)
 - [Getting Started](#-getting-started)
-- [Smart Contract Addresses](#-smart-contract-addresses)
 - [License](#-license)
 - [Team](#-team)
 
@@ -83,35 +81,6 @@ TaniFi introduces a **Hybrid USSD–Blockchain Protocol** that is:
 4. Smart contract distributes profit automatically
    _(e.g. 70% Investor / 30% Farmer)_
 
----
-
-## 🏗 Architecture
-
-TaniFi bridges **Telecom (Web2)** and **Blockchain (Web3)** using Account Abstraction.
-
-```mermaid
-graph TD
-    Farmer["Farmer (Feature Phone)"] -->|USSD *777#| Telco
-    Telco -->|HTTP Callback| Gateway
-
-    subgraph OffChain["Off-Chain Layer"]
-        Gateway --> Redis["Redis (Session State)"]
-        Gateway --> Auth["Auth Service"]
-        Gateway --> MPC["Wallet Abstraction"]
-    end
-
-    subgraph Lisk["Lisk Layer 2"]
-        MPC --> Bundler
-        Bundler --> EntryPoint
-        EntryPoint --> SmartWallet
-        SmartWallet --> Vault["TaniVault"]
-    end
-
-    Investor -->|Deposit| Vault
-```
-
----
-
 ## 🚀 Key Features
 
 - 📱 **USSD Interface** — Works on any phone, zero internet dependency
@@ -145,7 +114,7 @@ graph TD
 
 ---
 
-## 📍 Pilot Project Plan: Banyumas
+## 📍 Future Pilot Project Plan: Banyumas, Central Java, Indonesia
 
 **Commodity:** Coconut Sugar (Gula Semut)
 **Location:** Banyumas, Central Java
@@ -187,17 +156,6 @@ Invoke-RestMethod -Uri http://localhost:3000/v1/hooks/ussd \
   -ContentType "application/json" \
   -Body '{"sessionId":"S1","phoneNumber":"+6281234567890","text":""}'
 ```
-
----
-
-## 🔗 Smart Contract Addresses (Testnet)
-
-| Contract  | Address                                                                                |
-| --------- | -------------------------------------------------------------------------------------- |
-| TaniVault | `0x66403a9bF78b9732169a0099a311f995427c24Dd`                                           |
-|           | https://sepolia-blockscout.lisk.com/address/0x66403a9bF78b9732169a0099a311f995427c24Dd |
-|           |                                                                                        |
-| IDRX Mock | `0x...`                                                                                |
 
 ---
 

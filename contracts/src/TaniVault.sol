@@ -1,6 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
+/// @title TaniVault
+/// @notice Minimal vault for deposits and simple project bookkeeping.
+/// @dev Owner can create projects; anyone can deposit ETH.
 contract TaniVault {
     address public owner;
     uint256 public totalDeposited;

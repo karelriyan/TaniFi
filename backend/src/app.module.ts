@@ -1,3 +1,9 @@
+/**
+ * Root module for the backend API.
+ * - Loads environment config globally.
+ * - Wires Prisma and USSD modules.
+ * - Exposes admin and project HTTP controllers.
+ */
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { PrismaModule } from './prisma/prisma.module';

@@ -1,3 +1,9 @@
+/**
+ * USSD webhook entrypoint.
+ * - Delegates menu/state handling to UssdService.
+ * - Records audit logs with a hashed phone number.
+ * - Returns plain-text USSD responses (CON/END).
+ */
 import { Body, Controller, Post, Res } from '@nestjs/common';
 import type { Response } from 'express';
 import { PrismaService } from '../prisma/prisma.service';

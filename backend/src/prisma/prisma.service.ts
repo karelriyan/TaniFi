@@ -1,3 +1,8 @@
+/**
+ * Prisma client wrapper with Postgres adapter.
+ * - Reads DATABASE_URL.
+ * - Connects on module init, disconnects on shutdown.
+ */
 import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';

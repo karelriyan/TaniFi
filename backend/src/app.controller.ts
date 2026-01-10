@@ -1,3 +1,7 @@
+/**
+ * Basic health/hello endpoint for quick server checks.
+ * Delegates the response body to AppService.
+ */
 import { Controller, Get } from '@nestjs/common';
 import { AppService } from './app.service';
 

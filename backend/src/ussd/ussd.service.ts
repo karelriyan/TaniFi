@@ -1,3 +1,10 @@
+/**
+ * USSD state machine and session persistence.
+ * - Stores per-session state in Redis with a short TTL.
+ * - Supports registration and project creation flows.
+ * - Persists user/project/tx records via Prisma.
+ * - Hashes phone numbers before storage for privacy.
+ */
 import { Injectable } from '@nestjs/common';
 import Redis from 'ioredis';
 import * as crypto from 'crypto';
