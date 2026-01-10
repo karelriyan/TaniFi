@@ -145,7 +145,7 @@ graph TD
 
 ---
 
-## 📍 Pilot Project: Banyumas
+## 📍 Pilot Project Plan: Banyumas
 
 **Commodity:** Coconut Sugar (Gula Semut)
 **Location:** Banyumas, Central Java
@@ -209,9 +209,7 @@ MIT License — see [LICENSE](LICENSE)
 
 Built for **Lisk Builders Challenge – Round 3**
 
-* **Blockchain Engineer**
-* **Fullstack Developer**
-* **Agri-Economics Researcher**
+Solo Developer: Karel Tsalasatir Riyan
 
 ---
 
