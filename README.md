@@ -91,23 +91,23 @@ TaniFi bridges **Telecom (Web2)** and **Blockchain (Web3)** using Account Abstra
 
 ```mermaid
 graph TD
-    User[Farmer<br/>(Feature Phone)] -- USSD (*777#) --> Telco
-    Telco -- HTTP Callback --> Gateway
+    Farmer["Farmer (Feature Phone)"] -->|USSD *777#| Telco
+    Telco -->|HTTP Callback| Gateway
 
-    subgraph Off-Chain Layer
-        Gateway --> Auth
-        Gateway --> Redis[Session State]
-        Gateway --> MPC[MPC / Wallet Abstraction]
+    subgraph OffChain["Off-Chain Layer"]
+        Gateway --> Redis["Redis (Session State)"]
+        Gateway --> Auth["Auth Service"]
+        Gateway --> MPC["Wallet Abstraction"]
     end
 
-    subgraph Lisk Layer 2
+    subgraph Lisk["Lisk Layer 2"]
         MPC --> Bundler
         Bundler --> EntryPoint
         EntryPoint --> SmartWallet
-        SmartWallet --> Vault
+        SmartWallet --> Vault["TaniVault"]
     end
 
-    Investor --> Vault
+    Investor -->|Deposit| Vault
 ```
 
 ---
