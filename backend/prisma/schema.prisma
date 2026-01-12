@@ -1,18 +1,31 @@
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
 }
 
 datasource db {
   provider = "postgresql"
 }
 
-model User {
-  id        String   @id @default(cuid())
-  phoneHash String   @unique
-  createdAt DateTime @default(now())
+// ============ User & Identity ============
 
-  projects  Project[]
+model User {
+  id              String    @id @default(cuid())
+  phoneHash       String    @unique
+  walletAddress   String?   @unique
+  encryptedPin    String?   // Hashed PIN for USSD authentication
+  kycStatus       String    @default("PENDING") // PENDING, VERIFIED, REJECTED
+  reputationScore Int       @default(100)
+  balance         Int       @default(0) // IDRX balance in smallest unit
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  projects        Project[]
+
+  @@index([kycStatus])
 }
+
+// ============ USSD Session Management ============
 
 model UssdSession {
   id        String   @id @default(cuid())
@@ -22,29 +35,87 @@ model UssdSession {
   payload   Json?
   updatedAt DateTime @updatedAt
   createdAt DateTime @default(now())
+
+  @@index([phoneHash])
 }
+
+// ============ Agricultural Projects ============
 
 model Project {
-  id        String   @id @default(cuid())
-  userId    String
-  amount    Int
-  status    String   @default("created")
-  createdAt DateTime @default(now())
+  id              String    @id @default(cuid())
+  userId          String
+  commodity       String?   // gula_semut, padi, jagung
+  targetAmount    Int?      // Target funding amount
+  amount          Int       // Current/requested amount
+  fundedAmount    Int       @default(0)
+  farmerShareBps  Int       @default(3000) // 30% default
+  status          String    @default("created") // created, confirmed, funded, active, harvested, completed, failed
+  harvestTime     DateTime?
+  harvestRevenue  Int?
+  ipfsMetadata    String?   // IPFS hash for project documentation
+  chainProjectId  Int?      // On-chain project ID
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
 
-  user      User     @relation(fields: [userId], references: [id])
-  txs       Transaction[]
+  user            User      @relation(fields: [userId], references: [id])
+  txs             Transaction[]
+  investments     Investment[]
+
+  @@index([status])
+  @@index([userId])
 }
+
+// ============ Blockchain Transactions ============
 
 model Transaction {
   id        String   @id @default(cuid())
   projectId String
-  kind      String
-  status    String   @default("pending")
-  txHash    String?
+  kind      String   // create_project, invest, disburse, harvest, withdraw
+  status    String   @default("pending") // pending, submitted, success, failed
+  txHash    String?  @unique
+  amount    Int?
+  fromAddr  String?
+  toAddr    String?
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   project   Project  @relation(fields: [projectId], references: [id])
+
+  @@index([status])
+  @@index([txHash])
 }
+
+// ============ Investor Investments ============
+
+model Investment {
+  id              String    @id @default(cuid())
+  projectId       String
+  investorAddress String
+  amount          Int
+  txHash          String?
+  claimed         Boolean   @default(false)
+  claimedAmount   Int?
+  createdAt       DateTime  @default(now())
+
+  project         Project   @relation(fields: [projectId], references: [id])
+
+  @@unique([projectId, investorAddress])
+  @@index([investorAddress])
+}
+
+// ============ Vendor Registry ============
+
+model Vendor {
+  id            String    @id @default(cuid())
+  name          String
+  walletAddress String    @unique
+  isWhitelisted Boolean   @default(false)
+  createdAt     DateTime  @default(now())
+
+  @@index([isWhitelisted])
+}
+
+// ============ USSD Audit Logs ============
 
 model UssdAudit {
   id           String   @id @default(cuid())
@@ -54,7 +125,7 @@ model UssdAudit {
   text         String?
   stateBefore  String
   stateAfter   String
-  responseType String
+  responseType String   // CON or END
   responseText String
   createdAt    DateTime @default(now())
 
@@ -62,4 +133,3 @@ model UssdAudit {
   @@index([phoneHash])
   @@index([createdAt])
 }
-

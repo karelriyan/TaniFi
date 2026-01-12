@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(docx2txt:*)",
+      "Bash(xargs cat:*)",
+      "Bash(forge install:*)",
+      "Bash(npx prisma generate:*)",
+      "Bash(npx tsc:*)",
+      "Bash(npm install:*)"
+    ]
+  }
+}
