@@ -192,13 +192,16 @@ Invoke-RestMethod -Uri http://localhost:3000/v1/hooks/ussd \
 
 ## 🔗 Smart Contract Addresses (Testnet)
 
-| Contract  | Address                                                                                |
-| --------- | -------------------------------------------------------------------------------------- |
-| TaniVault | `0x66403a9bF78b9732169a0099a311f995427c24Dd`                                           |
-|           | https://sepolia-blockscout.lisk.com/address/0x66403a9bF78b9732169a0099a311f995427c24Dd |
-|           |                                                                                        |
-| IDRX Mock | `0x...`                                                                                |
-
+| Contract        | Address                                                                                |
+| --------------- | -------------------------------------------------------------------------------------- |
+| TaniVault       | `0xB39c94B718A75c3005F06f977224cF52AD7cAe49`                                           |
+|                 | https://sepolia-blockscout.lisk.com/address/0xB39c94B718A75c3005F06f977224cF52AD7cAe49 |
+|                 |                                                                                        |
+| IDRXMock        | `0x01653fA9F9e9411ac3028f6b4A54f39D68edEA44`                                           |
+|                 | https://sepolia-blockscout.lisk.com/address/0x01653fA9F9e9411ac3028f6b4A54f39D68edEA44 |
+|                 |                                                                                        |
+| FarmerRegistry  | `0x01A0789ae050370AC87d38Fd42b5371Ea0128bA4`                                           |
+|                 | https://sepolia-blockscout.lisk.com/address/0x01A0789ae050370AC87d38Fd42b5371Ea0128bA4 |
 ---
 
 ## 📜 License
