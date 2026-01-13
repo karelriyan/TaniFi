@@ -1,70 +1,17 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.20;
+pragma solidity ^0.8.24;
 
-<<<<<<< ours
-<<<<<<< ours
-/// @title TaniVault
-/// @notice Minimal vault for deposits and simple project bookkeeping.
-/// @dev Owner can create projects; anyone can deposit ETH.
-contract TaniVault {
-    address public owner;
-    uint256 public totalDeposited;
-
-    struct Project {
-        uint256 amount;
-        uint256 timestamp;
-    }
-
-    mapping(uint256 => Project) public projects;
-    uint256 public projectCount;
-
-    event Deposit(address indexed investor, uint256 amount);
-    event ProjectCreated(uint256 indexed projectId, uint256 amount);
-
-    modifier onlyOwner() {
-        _onlyOwner();
-        _;
-    }
-
-    function _onlyOwner() internal view {
-        require(msg.sender == owner, "Not authorized");
-    }
-
-    constructor() {
-        owner = msg.sender;
-    }
-
-    function deposit() external payable {
-        require(msg.value > 0, "Invalid amount");
-        totalDeposited += msg.value;
-        emit Deposit(msg.sender, msg.value);
-    }
-
-    function createProject(uint256 amount) external onlyOwner {
-        require(amount > 0, "Invalid amount");
-
-        projects[projectCount] = Project({
-            amount: amount,
-            timestamp: block.timestamp
-        });
-
-        emit ProjectCreated(projectCount, amount);
-        projectCount++;
-    }
-
-    function getBalance() external view returns (uint256) {
-        return address(this).balance;
-=======
-=======
->>>>>>> theirs
-import {IERC20} from "../lib/forge-std/src/interfaces/IERC20.sol";
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import {Pausable} from "@openzeppelin/contracts/utils/Pausable.sol";
 
 /// @title TaniVault - Sharia-Compliant Agricultural Finance Protocol
 /// @notice Core vault implementing Musyarakah (profit-sharing) for agricultural projects
 /// @dev Manages pooling of investor funds, project lifecycle, and profit distribution
 /// @author TaniFi Team - Lisk Builders Challenge 2026
 
-contract TaniVault {
+contract TaniVault is Ownable, ReentrancyGuard, Pausable {
     // ============ Enums ============
 
     enum ProjectState {
@@ -96,7 +43,6 @@ contract TaniVault {
     // ============ State Variables ============
 
     // Access Control
-    address public owner;
     mapping(address => bool) public cooperatives;
     mapping(address => bool) public operators;
 
@@ -120,10 +66,6 @@ contract TaniVault {
     uint256 public constant PLATFORM_FEE_BPS = 100; // 1%
     uint256 public constant BPS_DENOMINATOR = 10000;
     address public treasury;
-
-    // Security
-    bool private _locked;
-    bool public paused;
 
     // ============ Events ============
 
@@ -173,43 +115,49 @@ contract TaniVault {
     event CooperativeRemoved(address indexed cooperative);
     event OperatorAdded(address indexed operator);
     event OperatorRemoved(address indexed operator);
+    event TreasuryUpdated(address indexed newTreasury);
+
+    // ============ Errors ============
+
+    error NotCooperative();
+    error NotOperator();
+    error NotAuthorized();
+    error InvalidAddress();
+    error InvalidAmount();
+    error InvalidTarget();
+    error FarmerShareTooHigh();
+    error InvalidHarvestTime();
+    error NotFundraising();
+    error ExceedsTarget();
+    error TransferFailed();
+    error NotActive();
+    error NoFunds();
+    error WrongCooperative();
+    error NotHarvested();
+    error NoRevenue();
+    error NotCompleted();
+    error NoInvestment();
+    error InvalidState();
+    error NotFailed();
 
     // ============ Modifiers ============
 
-    modifier onlyOwner() {
-        require(msg.sender == owner, "TaniVault: not owner");
-        _;
-    }
-
     modifier onlyCooperative() {
-        require(cooperatives[msg.sender], "TaniVault: not cooperative");
+        if (!cooperatives[msg.sender]) revert NotCooperative();
         _;
     }
 
     modifier onlyOperator() {
-        require(operators[msg.sender] || msg.sender == owner, "TaniVault: not operator");
-        _;
-    }
-
-    modifier nonReentrant() {
-        require(!_locked, "TaniVault: reentrant call");
-        _locked = true;
-        _;
-        _locked = false;
-    }
-
-    modifier whenNotPaused() {
-        require(!paused, "TaniVault: paused");
+        if (!operators[msg.sender] && msg.sender != owner()) revert NotOperator();
         _;
     }
 
     // ============ Constructor ============
 
-    constructor(address _stablecoin, address _treasury) {
-        require(_stablecoin != address(0), "TaniVault: invalid stablecoin");
-        require(_treasury != address(0), "TaniVault: invalid treasury");
+    constructor(address _stablecoin, address _treasury) Ownable(msg.sender) {
+        if (_stablecoin == address(0)) revert InvalidAddress();
+        if (_treasury == address(0)) revert InvalidAddress();
 
-        owner = msg.sender;
         stablecoin = IERC20(_stablecoin);
         treasury = _treasury;
         operators[msg.sender] = true;
@@ -218,7 +166,7 @@ contract TaniVault {
     // ============ Admin Functions ============
 
     function addCooperative(address _cooperative) external onlyOwner {
-        require(_cooperative != address(0), "TaniVault: invalid address");
+        if (_cooperative == address(0)) revert InvalidAddress();
         cooperatives[_cooperative] = true;
         emit CooperativeAdded(_cooperative);
     }
@@ -229,7 +177,7 @@ contract TaniVault {
     }
 
     function addOperator(address _operator) external onlyOwner {
-        require(_operator != address(0), "TaniVault: invalid address");
+        if (_operator == address(0)) revert InvalidAddress();
         operators[_operator] = true;
         emit OperatorAdded(_operator);
     }
@@ -240,21 +188,17 @@ contract TaniVault {
     }
 
     function pause() external onlyOwner {
-        paused = true;
+        _pause();
     }
 
     function unpause() external onlyOwner {
-        paused = false;
+        _unpause();
     }
 
     function setTreasury(address _treasury) external onlyOwner {
-        require(_treasury != address(0), "TaniVault: invalid treasury");
+        if (_treasury == address(0)) revert InvalidAddress();
         treasury = _treasury;
-    }
-
-    function transferOwnership(address newOwner) external onlyOwner {
-        require(newOwner != address(0), "TaniVault: invalid owner");
-        owner = newOwner;
+        emit TreasuryUpdated(_treasury);
     }
 
     // ============ Project Lifecycle Functions ============
@@ -274,11 +218,11 @@ contract TaniVault {
         uint256 _harvestTime,
         string calldata _ipfsMetadata
     ) external onlyCooperative whenNotPaused returns (uint256) {
-        require(_farmer != address(0), "TaniVault: invalid farmer");
-        require(_approvedVendor != address(0), "TaniVault: invalid vendor");
-        require(_targetAmount > 0, "TaniVault: invalid target");
-        require(_farmerShareBps <= 5000, "TaniVault: farmer share too high"); // Max 50%
-        require(_harvestTime > block.timestamp, "TaniVault: invalid harvest time");
+        if (_farmer == address(0)) revert InvalidAddress();
+        if (_approvedVendor == address(0)) revert InvalidAddress();
+        if (_targetAmount == 0) revert InvalidTarget();
+        if (_farmerShareBps > 5000) revert FarmerShareTooHigh(); // Max 50%
+        if (_harvestTime <= block.timestamp) revert InvalidHarvestTime();
 
         uint256 projectId = projectCount;
         uint256 investorShareBps = BPS_DENOMINATOR - _farmerShareBps - PLATFORM_FEE_BPS;
@@ -315,18 +259,14 @@ contract TaniVault {
     {
         Project storage project = projects[_projectId];
 
-        require(project.state == ProjectState.FUNDRAISING, "TaniVault: not fundraising");
-        require(_amount > 0, "TaniVault: invalid amount");
-        require(
-            project.fundedAmount + _amount <= project.targetAmount,
-            "TaniVault: exceeds target"
-        );
+        if (project.state != ProjectState.FUNDRAISING) revert NotFundraising();
+        if (_amount == 0) revert InvalidAmount();
+        if (project.fundedAmount + _amount > project.targetAmount) revert ExceedsTarget();
 
         // Transfer IDRX from investor to vault
-        require(
-            stablecoin.transferFrom(msg.sender, address(this), _amount),
-            "TaniVault: transfer failed"
-        );
+        if (!stablecoin.transferFrom(msg.sender, address(this), _amount)) {
+            revert TransferFailed();
+        }
 
         // Update state
         project.fundedAmount += _amount;
@@ -357,20 +297,18 @@ contract TaniVault {
     {
         Project storage project = projects[_projectId];
 
-        require(
-            msg.sender == project.cooperative || operators[msg.sender],
-            "TaniVault: not authorized"
-        );
-        require(project.state == ProjectState.ACTIVE, "TaniVault: not active");
-        require(project.fundedAmount > 0, "TaniVault: no funds");
+        if (msg.sender != project.cooperative && !operators[msg.sender]) {
+            revert NotAuthorized();
+        }
+        if (project.state != ProjectState.ACTIVE) revert NotActive();
+        if (project.fundedAmount == 0) revert NoFunds();
 
         uint256 disbursementAmount = project.fundedAmount;
 
         // Transfer to approved vendor (closed-loop - not directly to farmer)
-        require(
-            stablecoin.transfer(project.approvedVendor, disbursementAmount),
-            "TaniVault: disbursement failed"
-        );
+        if (!stablecoin.transfer(project.approvedVendor, disbursementAmount)) {
+            revert TransferFailed();
+        }
 
         emit FundsDisbursed(_projectId, project.approvedVendor, disbursementAmount);
     }
@@ -384,8 +322,8 @@ contract TaniVault {
     {
         Project storage project = projects[_projectId];
 
-        require(project.cooperative == msg.sender, "TaniVault: wrong cooperative");
-        require(project.state == ProjectState.ACTIVE, "TaniVault: not active");
+        if (project.cooperative != msg.sender) revert WrongCooperative();
+        if (project.state != ProjectState.ACTIVE) revert NotActive();
 
         project.harvestRevenue = _revenue;
         project.state = ProjectState.HARVESTED;
@@ -402,12 +340,11 @@ contract TaniVault {
     {
         Project storage project = projects[_projectId];
 
-        require(
-            msg.sender == project.cooperative || operators[msg.sender],
-            "TaniVault: not authorized"
-        );
-        require(project.state == ProjectState.HARVESTED, "TaniVault: not harvested");
-        require(project.harvestRevenue > 0, "TaniVault: no revenue");
+        if (msg.sender != project.cooperative && !operators[msg.sender]) {
+            revert NotAuthorized();
+        }
+        if (project.state != ProjectState.HARVESTED) revert NotHarvested();
+        if (project.harvestRevenue == 0) revert NoRevenue();
 
         uint256 totalRevenue = project.harvestRevenue;
 
@@ -417,22 +354,19 @@ contract TaniVault {
         uint256 investorPool = totalRevenue - farmerShare - platformFee;
 
         // Cooperative must deposit the revenue first
-        require(
-            stablecoin.transferFrom(msg.sender, address(this), totalRevenue),
-            "TaniVault: revenue transfer failed"
-        );
+        if (!stablecoin.transferFrom(msg.sender, address(this), totalRevenue)) {
+            revert TransferFailed();
+        }
 
         // Transfer farmer share immediately
-        require(
-            stablecoin.transfer(project.farmer, farmerShare),
-            "TaniVault: farmer transfer failed"
-        );
+        if (!stablecoin.transfer(project.farmer, farmerShare)) {
+            revert TransferFailed();
+        }
 
         // Transfer platform fee to treasury
-        require(
-            stablecoin.transfer(treasury, platformFee),
-            "TaniVault: fee transfer failed"
-        );
+        if (!stablecoin.transfer(treasury, platformFee)) {
+            revert TransferFailed();
+        }
 
         // Calculate and store investor returns proportionally
         _distributeInvestorReturns(_projectId, investorPool);
@@ -457,10 +391,10 @@ contract TaniVault {
         nonReentrant
     {
         Project storage project = projects[_projectId];
-        require(project.state == ProjectState.COMPLETED, "TaniVault: not completed");
+        if (project.state != ProjectState.COMPLETED) revert NotCompleted();
 
         uint256 invested = investments[_projectId][msg.sender];
-        require(invested > 0, "TaniVault: no investment");
+        if (invested == 0) revert NoInvestment();
 
         // Calculate proportional return
         uint256 totalRev = project.harvestRevenue;
@@ -474,10 +408,9 @@ contract TaniVault {
         investments[_projectId][msg.sender] = 0;
 
         // Transfer returns
-        require(
-            stablecoin.transfer(msg.sender, returnAmount),
-            "TaniVault: withdrawal failed"
-        );
+        if (!stablecoin.transfer(msg.sender, returnAmount)) {
+            revert TransferFailed();
+        }
 
         emit InvestorWithdrawal(_projectId, msg.sender, returnAmount);
     }
@@ -490,11 +423,9 @@ contract TaniVault {
         onlyOperator
     {
         Project storage project = projects[_projectId];
-        require(
-            project.state == ProjectState.FUNDRAISING ||
-            project.state == ProjectState.ACTIVE,
-            "TaniVault: invalid state"
-        );
+        if (project.state != ProjectState.FUNDRAISING && project.state != ProjectState.ACTIVE) {
+            revert InvalidState();
+        }
 
         project.state = ProjectState.FAILED;
 
@@ -508,20 +439,19 @@ contract TaniVault {
         nonReentrant
     {
         Project storage project = projects[_projectId];
-        require(project.state == ProjectState.FAILED, "TaniVault: not failed");
+        if (project.state != ProjectState.FAILED) revert NotFailed();
 
         uint256 invested = investments[_projectId][msg.sender];
-        require(invested > 0, "TaniVault: no investment");
+        if (invested == 0) revert NoInvestment();
 
         // Clear investment
         investments[_projectId][msg.sender] = 0;
         project.fundedAmount -= invested;
 
         // Refund
-        require(
-            stablecoin.transfer(msg.sender, invested),
-            "TaniVault: refund failed"
-        );
+        if (!stablecoin.transfer(msg.sender, invested)) {
+            revert TransferFailed();
+        }
     }
 
     // ============ View Functions ============
@@ -572,9 +502,5 @@ contract TaniVault {
         uint256 investorPool = _expectedRevenue - farmerShare - platformFee;
 
         return (invested * investorPool) / totalInvested[_projectId];
-<<<<<<< ours
->>>>>>> theirs
-=======
->>>>>>> theirs
     }
 }

@@ -1,11 +1,15 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.20;
+pragma solidity ^0.8.24;
+
+import {ERC721} from "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
 /// @title FarmerRegistry - Soulbound Identity Token for TaniFi Farmers
 /// @notice Non-transferable NFT representing farmer identity and reputation
 /// @dev Implements Soulbound Token (SBT) pattern - tokens cannot be transferred after minting
+/// @author TaniFi Team - Lisk Builders Challenge 2026
 
-contract FarmerRegistry {
+contract FarmerRegistry is ERC721, Ownable {
     // ============ Structs ============
 
     struct FarmerProfile {
@@ -22,17 +26,12 @@ contract FarmerRegistry {
 
     // ============ State Variables ============
 
-    string public constant name = "TaniFi Farmer Identity";
-    string public constant symbol = "TANI-ID";
-
-    address public owner;
     address public taniVault;       // TaniVault contract address for reputation updates
 
     mapping(address => bool) public kycAdmins;
 
     // Token storage
-    uint256 public totalSupply;
-    mapping(uint256 => address) public ownerOf;
+    uint256 private _tokenIdCounter;
     mapping(address => uint256) public tokenOfOwner;  // One token per farmer
     mapping(uint256 => FarmerProfile) public profiles;
 
@@ -47,7 +46,6 @@ contract FarmerRegistry {
 
     // ============ Events ============
 
-    event Transfer(address indexed from, address indexed to, uint256 indexed tokenId);
     event FarmerRegistered(
         uint256 indexed tokenId,
         address indexed farmer,
@@ -63,29 +61,51 @@ contract FarmerRegistry {
     event MetadataUpdated(uint256 indexed tokenId, string newURI);
     event KYCAdminAdded(address indexed admin);
     event KYCAdminRemoved(address indexed admin);
+    event TaniVaultUpdated(address indexed newTaniVault);
+
+    // ============ Errors ============
+
+    error NotKYCAdmin();
+    error NotTaniVault();
+    error InvalidAddress();
+    error AlreadyRegistered();
+    error PhoneAlreadyUsed();
+    error FarmerNotRegistered();
+    error AlreadyVerified();
+    error ScoreTooHigh();
+    error SoulboundTransferBlocked();
 
     // ============ Modifiers ============
 
-    modifier onlyOwner() {
-        require(msg.sender == owner, "FarmerRegistry: not owner");
-        _;
-    }
-
     modifier onlyKYCAdmin() {
-        require(kycAdmins[msg.sender] || msg.sender == owner, "FarmerRegistry: not KYC admin");
+        if (!kycAdmins[msg.sender] && msg.sender != owner()) revert NotKYCAdmin();
         _;
     }
 
     modifier onlyTaniVault() {
-        require(msg.sender == taniVault, "FarmerRegistry: not TaniVault");
+        if (msg.sender != taniVault) revert NotTaniVault();
         _;
     }
 
     // ============ Constructor ============
 
-    constructor() {
-        owner = msg.sender;
+    constructor() ERC721("TaniFi Farmer Identity", "TANI-ID") Ownable(msg.sender) {
         kycAdmins[msg.sender] = true;
+    }
+
+    // ============ Soulbound Override ============
+
+    /// @notice Override to prevent transfers - Soulbound tokens
+    /// @dev This function is called before any token transfer
+    function _update(address to, uint256 tokenId, address auth) internal override returns (address) {
+        address from = _ownerOf(tokenId);
+
+        // Allow minting (from == address(0)) but block all transfers
+        if (from != address(0) && to != address(0)) {
+            revert SoulboundTransferBlocked();
+        }
+
+        return super._update(to, tokenId, auth);
     }
 
     // ============ Registration Functions ============
@@ -99,14 +119,14 @@ contract FarmerRegistry {
         bytes32 _phoneHash,
         string calldata _metadataURI
     ) external onlyKYCAdmin returns (uint256) {
-        require(_farmer != address(0), "FarmerRegistry: invalid farmer");
-        require(tokenOfOwner[_farmer] == 0, "FarmerRegistry: already registered");
-        require(phoneHashToWallet[_phoneHash] == address(0), "FarmerRegistry: phone already used");
+        if (_farmer == address(0)) revert InvalidAddress();
+        if (tokenOfOwner[_farmer] != 0) revert AlreadyRegistered();
+        if (phoneHashToWallet[_phoneHash] != address(0)) revert PhoneAlreadyUsed();
 
-        totalSupply++;
-        uint256 tokenId = totalSupply;
+        _tokenIdCounter++;
+        uint256 tokenId = _tokenIdCounter;
 
-        ownerOf[tokenId] = _farmer;
+        _safeMint(_farmer, tokenId);
         tokenOfOwner[_farmer] = tokenId;
         phoneHashToWallet[_phoneHash] = _farmer;
 
@@ -122,7 +142,6 @@ contract FarmerRegistry {
             metadataURI: _metadataURI
         });
 
-        emit Transfer(address(0), _farmer, tokenId);
         emit FarmerRegistered(tokenId, _farmer, _phoneHash);
 
         return tokenId;
@@ -132,8 +151,8 @@ contract FarmerRegistry {
     /// @param _farmer Address of the farmer to verify
     function verifyFarmer(address _farmer) external onlyKYCAdmin {
         uint256 tokenId = tokenOfOwner[_farmer];
-        require(tokenId != 0, "FarmerRegistry: farmer not registered");
-        require(!profiles[tokenId].isKYCVerified, "FarmerRegistry: already verified");
+        if (tokenId == 0) revert FarmerNotRegistered();
+        if (profiles[tokenId].isKYCVerified) revert AlreadyVerified();
 
         profiles[tokenId].isKYCVerified = true;
 
@@ -144,7 +163,7 @@ contract FarmerRegistry {
     /// @param _farmer Address of the farmer
     function revokeVerification(address _farmer) external onlyKYCAdmin {
         uint256 tokenId = tokenOfOwner[_farmer];
-        require(tokenId != 0, "FarmerRegistry: farmer not registered");
+        if (tokenId == 0) revert FarmerNotRegistered();
 
         profiles[tokenId].isKYCVerified = false;
     }
@@ -156,7 +175,7 @@ contract FarmerRegistry {
     /// @param _success Whether the project was successful
     function recordProjectCompletion(address _farmer, bool _success) external onlyTaniVault {
         uint256 tokenId = tokenOfOwner[_farmer];
-        require(tokenId != 0, "FarmerRegistry: farmer not registered");
+        if (tokenId == 0) revert FarmerNotRegistered();
 
         FarmerProfile storage profile = profiles[tokenId];
         uint256 oldScore = profile.reputationScore;
@@ -189,8 +208,8 @@ contract FarmerRegistry {
         string calldata _reason
     ) external onlyOwner {
         uint256 tokenId = tokenOfOwner[_farmer];
-        require(tokenId != 0, "FarmerRegistry: farmer not registered");
-        require(_newScore <= MAX_REPUTATION, "FarmerRegistry: score too high");
+        if (tokenId == 0) revert FarmerNotRegistered();
+        if (_newScore > MAX_REPUTATION) revert ScoreTooHigh();
 
         uint256 oldScore = profiles[tokenId].reputationScore;
         profiles[tokenId].reputationScore = _newScore;
@@ -205,7 +224,7 @@ contract FarmerRegistry {
     /// @param _newURI New IPFS URI
     function updateMetadata(address _farmer, string calldata _newURI) external onlyKYCAdmin {
         uint256 tokenId = tokenOfOwner[_farmer];
-        require(tokenId != 0, "FarmerRegistry: farmer not registered");
+        if (tokenId == 0) revert FarmerNotRegistered();
 
         profiles[tokenId].metadataURI = _newURI;
 
@@ -213,19 +232,24 @@ contract FarmerRegistry {
     }
 
     /// @notice Get token metadata URI (ERC721 compatible)
-    /// @param _tokenId Token ID
-    function tokenURI(uint256 _tokenId) external view returns (string memory) {
-        require(ownerOf[_tokenId] != address(0), "FarmerRegistry: token not found");
-        return profiles[_tokenId].metadataURI;
+    /// @param tokenId Token ID
+    function tokenURI(uint256 tokenId) public view override returns (string memory) {
+        _requireOwned(tokenId);
+        return profiles[tokenId].metadataURI;
     }
 
     // ============ View Functions ============
+
+    /// @notice Get total supply
+    function totalSupply() external view returns (uint256) {
+        return _tokenIdCounter;
+    }
 
     /// @notice Get full farmer profile
     /// @param _farmer Address of the farmer
     function getFarmerProfile(address _farmer) external view returns (FarmerProfile memory) {
         uint256 tokenId = tokenOfOwner[_farmer];
-        require(tokenId != 0, "FarmerRegistry: farmer not registered");
+        if (tokenId == 0) revert FarmerNotRegistered();
         return profiles[tokenId];
     }
 
@@ -251,59 +275,16 @@ contract FarmerRegistry {
         return profiles[tokenId].isKYCVerified;
     }
 
-    /// @notice Get balance of address (always 0 or 1 for SBT)
-    /// @param _owner Address to check
-    function balanceOf(address _owner) external view returns (uint256) {
-        return tokenOfOwner[_owner] != 0 ? 1 : 0;
-    }
-
-    // ============ Soulbound Transfer Block ============
-
-    /// @notice Transfer function - BLOCKED for Soulbound tokens
-    /// @dev Always reverts - tokens are non-transferable
-    function transferFrom(address, address, uint256) external pure {
-        revert("FarmerRegistry: Soulbound tokens are non-transferable");
-    }
-
-    /// @notice Safe transfer function - BLOCKED for Soulbound tokens
-    function safeTransferFrom(address, address, uint256) external pure {
-        revert("FarmerRegistry: Soulbound tokens are non-transferable");
-    }
-
-    /// @notice Safe transfer function with data - BLOCKED for Soulbound tokens
-    function safeTransferFrom(address, address, uint256, bytes calldata) external pure {
-        revert("FarmerRegistry: Soulbound tokens are non-transferable");
-    }
-
-    /// @notice Approve function - BLOCKED for Soulbound tokens
-    function approve(address, uint256) external pure {
-        revert("FarmerRegistry: Soulbound tokens are non-transferable");
-    }
-
-    /// @notice Set approval for all - BLOCKED for Soulbound tokens
-    function setApprovalForAll(address, bool) external pure {
-        revert("FarmerRegistry: Soulbound tokens are non-transferable");
-    }
-
-    /// @notice Get approved address - Always returns zero address for SBT
-    function getApproved(uint256) external pure returns (address) {
-        return address(0);
-    }
-
-    /// @notice Check if approved for all - Always returns false for SBT
-    function isApprovedForAll(address, address) external pure returns (bool) {
-        return false;
-    }
-
     // ============ Admin Functions ============
 
     function setTaniVault(address _taniVault) external onlyOwner {
-        require(_taniVault != address(0), "FarmerRegistry: invalid TaniVault");
+        if (_taniVault == address(0)) revert InvalidAddress();
         taniVault = _taniVault;
+        emit TaniVaultUpdated(_taniVault);
     }
 
     function addKYCAdmin(address _admin) external onlyOwner {
-        require(_admin != address(0), "FarmerRegistry: invalid admin");
+        if (_admin == address(0)) revert InvalidAddress();
         kycAdmins[_admin] = true;
         emit KYCAdminAdded(_admin);
     }
@@ -311,19 +292,5 @@ contract FarmerRegistry {
     function removeKYCAdmin(address _admin) external onlyOwner {
         kycAdmins[_admin] = false;
         emit KYCAdminRemoved(_admin);
-    }
-
-    function transferOwnership(address newOwner) external onlyOwner {
-        require(newOwner != address(0), "FarmerRegistry: invalid owner");
-        owner = newOwner;
-    }
-
-    // ============ ERC165 Support ============
-
-    function supportsInterface(bytes4 interfaceId) external pure returns (bool) {
-        return
-            interfaceId == 0x01ffc9a7 || // ERC165
-            interfaceId == 0x80ac58cd || // ERC721
-            interfaceId == 0x5b5e139f;   // ERC721Metadata
     }
 }

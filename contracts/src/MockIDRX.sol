@@ -1,89 +1,48 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.20;
+pragma solidity ^0.8.24;
+
+import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import {ERC20Burnable} from "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
+import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
 /// @title MockIDRX - Mock Indonesian Rupiah Stablecoin
 /// @notice Test token representing IDRX stablecoin for TaniFi development
 /// @dev ERC20 implementation with 2 decimals (Rupiah convention) and minting capability
+/// @author TaniFi Team - Lisk Builders Challenge 2026
 
-contract MockIDRX {
+contract MockIDRX is ERC20, ERC20Burnable, Ownable {
     // ============ State Variables ============
 
-    string public constant name = "Mock IDRX Stablecoin";
-    string public constant symbol = "IDRX";
-    uint8 public constant decimals = 2; // 2 decimals for Rupiah (sen)
-
-    uint256 public totalSupply;
-
-    mapping(address => uint256) public balanceOf;
-    mapping(address => mapping(address => uint256)) public allowance;
-
-    address public owner;
     mapping(address => bool) public minters;
 
     // ============ Events ============
 
-    event Transfer(address indexed from, address indexed to, uint256 value);
-    event Approval(address indexed owner, address indexed spender, uint256 value);
     event MinterAdded(address indexed minter);
     event MinterRemoved(address indexed minter);
 
+    // ============ Errors ============
+
+    error NotMinter();
+    error InvalidAddress();
+
     // ============ Modifiers ============
 
-    modifier onlyOwner() {
-        require(msg.sender == owner, "IDRX: not owner");
-        _;
-    }
-
     modifier onlyMinter() {
-        require(minters[msg.sender] || msg.sender == owner, "IDRX: not minter");
+        if (!minters[msg.sender] && msg.sender != owner()) revert NotMinter();
         _;
     }
 
     // ============ Constructor ============
 
-    constructor() {
-        owner = msg.sender;
+    constructor() ERC20("Mock IDRX Stablecoin", "IDRX") Ownable(msg.sender) {
         minters[msg.sender] = true;
     }
 
-    // ============ ERC20 Functions ============
+    // ============ ERC20 Overrides ============
 
-    function transfer(address to, uint256 amount) external returns (bool) {
-        require(to != address(0), "IDRX: transfer to zero address");
-        require(balanceOf[msg.sender] >= amount, "IDRX: insufficient balance");
-
-        balanceOf[msg.sender] -= amount;
-        balanceOf[to] += amount;
-
-        emit Transfer(msg.sender, to, amount);
-        return true;
-    }
-
-    function approve(address spender, uint256 amount) external returns (bool) {
-        require(spender != address(0), "IDRX: approve to zero address");
-
-        allowance[msg.sender][spender] = amount;
-
-        emit Approval(msg.sender, spender, amount);
-        return true;
-    }
-
-    function transferFrom(
-        address from,
-        address to,
-        uint256 amount
-    ) external returns (bool) {
-        require(from != address(0), "IDRX: transfer from zero address");
-        require(to != address(0), "IDRX: transfer to zero address");
-        require(balanceOf[from] >= amount, "IDRX: insufficient balance");
-        require(allowance[from][msg.sender] >= amount, "IDRX: insufficient allowance");
-
-        allowance[from][msg.sender] -= amount;
-        balanceOf[from] -= amount;
-        balanceOf[to] += amount;
-
-        emit Transfer(from, to, amount);
-        return true;
+    /// @notice Returns 2 decimals (Rupiah convention - sen)
+    function decimals() public pure override returns (uint8) {
+        return 2;
     }
 
     // ============ Minting Functions ============
@@ -92,43 +51,14 @@ contract MockIDRX {
     /// @param to Recipient address
     /// @param amount Amount to mint (in smallest unit - sen)
     function mint(address to, uint256 amount) external onlyMinter {
-        require(to != address(0), "IDRX: mint to zero address");
-
-        totalSupply += amount;
-        balanceOf[to] += amount;
-
-        emit Transfer(address(0), to, amount);
-    }
-
-    /// @notice Burn tokens
-    /// @param amount Amount to burn
-    function burn(uint256 amount) external {
-        require(balanceOf[msg.sender] >= amount, "IDRX: burn exceeds balance");
-
-        balanceOf[msg.sender] -= amount;
-        totalSupply -= amount;
-
-        emit Transfer(msg.sender, address(0), amount);
-    }
-
-    /// @notice Burn tokens from an address (requires approval)
-    /// @param from Address to burn from
-    /// @param amount Amount to burn
-    function burnFrom(address from, uint256 amount) external {
-        require(balanceOf[from] >= amount, "IDRX: burn exceeds balance");
-        require(allowance[from][msg.sender] >= amount, "IDRX: insufficient allowance");
-
-        allowance[from][msg.sender] -= amount;
-        balanceOf[from] -= amount;
-        totalSupply -= amount;
-
-        emit Transfer(from, address(0), amount);
+        if (to == address(0)) revert InvalidAddress();
+        _mint(to, amount);
     }
 
     // ============ Admin Functions ============
 
     function addMinter(address minter) external onlyOwner {
-        require(minter != address(0), "IDRX: invalid minter");
+        if (minter == address(0)) revert InvalidAddress();
         minters[minter] = true;
         emit MinterAdded(minter);
     }
@@ -138,30 +68,21 @@ contract MockIDRX {
         emit MinterRemoved(minter);
     }
 
-    function transferOwnership(address newOwner) external onlyOwner {
-        require(newOwner != address(0), "IDRX: invalid owner");
-        owner = newOwner;
-    }
-
     // ============ Faucet Function (Testnet Only) ============
 
     /// @notice Faucet function for testing - anyone can get test tokens
     /// @dev Only for testnet deployment - remove in production
     function faucet() external {
-        uint256 faucetAmount = 10_000_000 * (10 ** decimals); // 10 million IDRX
-        totalSupply += faucetAmount;
-        balanceOf[msg.sender] += faucetAmount;
-        emit Transfer(address(0), msg.sender, faucetAmount);
+        uint256 faucetAmount = 10_000_000 * (10 ** decimals()); // 10 million IDRX
+        _mint(msg.sender, faucetAmount);
     }
 
-    /// @notice Faucet with custom amount (owner only)
+    /// @notice Faucet with custom amount (minter only)
     /// @param to Recipient
     /// @param amount Amount in IDRX (will be converted to smallest unit)
     function faucetTo(address to, uint256 amount) external onlyMinter {
-        require(to != address(0), "IDRX: invalid recipient");
-        uint256 amountInSmallest = amount * (10 ** decimals);
-        totalSupply += amountInSmallest;
-        balanceOf[to] += amountInSmallest;
-        emit Transfer(address(0), to, amountInSmallest);
+        if (to == address(0)) revert InvalidAddress();
+        uint256 amountInSmallest = amount * (10 ** decimals());
+        _mint(to, amountInSmallest);
     }
 }
