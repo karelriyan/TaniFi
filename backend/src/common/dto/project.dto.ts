@@ -13,25 +13,7 @@ import {
 import { Type } from 'class-transformer';
 
 // ============ Query DTOs ============
-
-export class ListProjectsQueryDto {
-  @IsOptional()
-  @IsString()
-  status?: string;
-
-  @IsOptional()
-  @IsNumber()
-  @Min(1)
-  @Max(100)
-  @Type(() => Number)
-  limit?: number;
-
-  @IsOptional()
-  @IsNumber()
-  @Min(0)
-  @Type(() => Number)
-  offset?: number;
-}
+// Note: ListProjectsQueryDto is defined in admin.dto.ts and re-exported from there
 
 export class ListInvestorsQueryDto {
   @IsOptional()

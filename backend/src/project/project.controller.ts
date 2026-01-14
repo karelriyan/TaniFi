@@ -71,7 +71,9 @@ export class ProjectController {
         ...p,
         investorShareBps: 10000 - p.farmerShareBps - 100, // 100 = platform fee
         fundingProgress:
-          p.targetAmount > 0 ? (p.fundedAmount / p.targetAmount) * 100 : 0,
+          (p.targetAmount ?? 0) > 0
+            ? (p.fundedAmount / (p.targetAmount ?? 1)) * 100
+            : 0,
       })),
       pagination: { total, limit: take, offset: skip },
     };
@@ -112,11 +114,11 @@ export class ProjectController {
     }
 
     // Try to fetch on-chain data if available
-    let onChainData = null;
+    let onChainData: Awaited<ReturnType<typeof this.blockchain.getProject>> | null = null;
     if (project.chainProjectId !== null) {
       try {
         onChainData = await this.blockchain.getProject(project.chainProjectId);
-      } catch (error) {
+      } catch {
         // Ignore on-chain errors, return DB data
       }
     }
@@ -127,8 +129,8 @@ export class ProjectController {
         ...project,
         investorShareBps: 10000 - project.farmerShareBps - 100,
         fundingProgress:
-          project.targetAmount > 0
-            ? (project.fundedAmount / project.targetAmount) * 100
+          (project.targetAmount ?? 0) > 0
+            ? (project.fundedAmount / (project.targetAmount ?? 1)) * 100
             : 0,
         onChain: onChainData,
       },
