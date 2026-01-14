@@ -104,12 +104,12 @@ export const FARMER_REGISTRY_ABI = [
   'function removeKYCAdmin(address admin)',
 ] as const;
 
-// Contract addresses on Lisk Sepolia (to be updated after deployment)
+// Contract addresses on Lisk Sepolia (Deployed January 2026)
 export const CONTRACT_ADDRESSES = {
   LISK_SEPOLIA: {
-    TANI_VAULT: process.env.TANI_VAULT_ADDRESS || '0x0000000000000000000000000000000000000000',
-    IDRX: process.env.IDRX_ADDRESS || '0x0000000000000000000000000000000000000000',
-    FARMER_REGISTRY: process.env.FARMER_REGISTRY_ADDRESS || '0x0000000000000000000000000000000000000000',
+    TANI_VAULT: process.env.TANI_VAULT_ADDRESS || '0xB39c94B718A75c3005F06f977224cF52AD7cAe49',
+    IDRX: process.env.IDRX_ADDRESS || '0x01653fA9F9e9411ac3028f6b4A54f39D68edEA44',
+    FARMER_REGISTRY: process.env.FARMER_REGISTRY_ADDRESS || '0x01A0789ae050370AC87d38Fd42b5371Ea0128bA4',
   },
 } as const;
 
