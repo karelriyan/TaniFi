@@ -1,6 +1,6 @@
 # 🌾 TaniFi — Bringing On-Chain Finance to the Offline Farmer
 
-![Lisk Builders](https://img.shields.io/badge/Lisk%20Builders-Round%203-blue)
+![Base Indonesia](https://img.shields.io/badge/Base%20Indonesia-Hackathon%202025-blue)
 ![Status](https://img.shields.io/badge/status-MVP-orange)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
@@ -100,7 +100,7 @@ graph TD
         Gateway --> MPC["Wallet Abstraction"]
     end
 
-    subgraph Lisk["Lisk Layer 2"]
+    subgraph Base["Base Layer 2"]
         MPC --> Bundler
         Bundler --> EntryPoint
         EntryPoint --> SmartWallet
@@ -134,9 +134,10 @@ graph TD
 
 ### Blockchain
 
-- **Lisk Layer 2**
+- **Base Sepolia** (Base Layer 2)
 - **Solidity**, **Foundry**
 - **ERC-4337 Account Abstraction**
+- **IDRX Stablecoin** Integration
 
 ### Infrastructure
 
@@ -190,18 +191,22 @@ Invoke-RestMethod -Uri http://localhost:3000/v1/hooks/ussd \
 
 ---
 
-## 🔗 Smart Contract Addresses (Testnet)
+## 🔗 Smart Contract Addresses (Base Sepolia Testnet)
 
-| Contract        | Address                                                                                |
-| --------------- | -------------------------------------------------------------------------------------- |
-| TaniVault       | `0xB39c94B718A75c3005F06f977224cF52AD7cAe49`                                           |
-|                 | https://sepolia-blockscout.lisk.com/address/0xB39c94B718A75c3005F06f977224cF52AD7cAe49 |
-|                 |                                                                                        |
-| IDRXMock        | `0x01653fA9F9e9411ac3028f6b4A54f39D68edEA44`                                           |
-|                 | https://sepolia-blockscout.lisk.com/address/0x01653fA9F9e9411ac3028f6b4A54f39D68edEA44 |
-|                 |                                                                                        |
-| FarmerRegistry  | `0x01A0789ae050370AC87d38Fd42b5371Ea0128bA4`                                           |
-|                 | https://sepolia-blockscout.lisk.com/address/0x01A0789ae050370AC87d38Fd42b5371Ea0128bA4 |
+**Network:** Base Sepolia (Chain ID: 84532)
+**Deployed:** January 24, 2026
+
+| Contract        | Address                                      | Verified on BaseScan                                                 |
+| --------------- | -------------------------------------------- | -------------------------------------------------------------------- |
+| **MockIDRX**    | `0xe22c8b828A60c95F9Ca3ad9275B30C3F58Bd0110` | [View Contract](https://sepolia.basescan.org/address/0xe22c8b828a60c95f9ca3ad9275b30c3f58bd0110) |
+| **TaniVault**   | `0xEAD7D9095e16fA298d5d66ab129d28638a1deb50` | [View Contract](https://sepolia.basescan.org/address/0xead7d9095e16fa298d5d66ab129d28638a1deb50) |
+| **FarmerRegistry** | `0x0fc35d36cAE59077739f93B513F9a5f5a52E4409` | [View Contract](https://sepolia.basescan.org/address/0x0fc35d36cae59077739f93b513f9a5f5a52e4409) |
+
+**Network Details:**
+- RPC URL: `https://sepolia.base.org`
+- Block Explorer: `https://sepolia.basescan.org`
+- Testnet Faucet: [Coinbase Faucet](https://www.coinbase.com/faucets/base-ethereum-goerli-faucet)
+
 ---
 
 ## 📜 License
@@ -210,13 +215,14 @@ MIT License — see [LICENSE](LICENSE)
 
 ---
 
-## 👤 Developer
+## 👤 Team
 
-Built for **Lisk Builders Challenge – Round 3**
+**Built for Base Indonesia Hackathon 2025**
 
 Solo Developer: Karel Tsalasatir Riyan
-
 Universitas Jenderal Soedirman
+
+**Track:** Base Track + IDRX Integration (Eligible for Best Project IDRX bonus)
 
 ---
 

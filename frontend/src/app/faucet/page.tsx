@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { ethers, Contract } from 'ethers';
 import { useWalletContext } from '@/components/WalletProvider';
-import { IDRX_ABI, CONTRACT_ADDRESSES, LISK_SEPOLIA } from '@/lib/contracts';
+import { IDRX_ABI, CONTRACT_ADDRESSES, BASE_SEPOLIA } from '@/lib/contracts';
 
 export default function FaucetPage() {
   const { address, isConnected, isCorrectNetwork, signer } = useWalletContext();
@@ -25,7 +25,7 @@ export default function FaucetPage() {
 
     try {
       setLoading(true);
-      const provider = new ethers.JsonRpcProvider(LISK_SEPOLIA.rpcUrls[0]);
+      const provider = new ethers.JsonRpcProvider(BASE_SEPOLIA.rpcUrls[0]);
       const idrx = new Contract(CONTRACT_ADDRESSES.IDRX, IDRX_ABI, provider);
 
       const bal = await idrx.balanceOf(address);
@@ -65,7 +65,7 @@ export default function FaucetPage() {
         <span className="text-6xl mb-4 block">💧</span>
         <h1 className="text-3xl font-bold text-gray-800 mb-2">IDRX Test Faucet</h1>
         <p className="text-gray-600">
-          Get free test IDRX tokens to try out TaniFi on Lisk Sepolia.
+          Get free test IDRX tokens to try out TaniFi on Base Sepolia.
         </p>
       </div>
 
@@ -79,7 +79,7 @@ export default function FaucetPage() {
         ) : !isCorrectNetwork ? (
           <div className="text-center">
             <p className="text-amber-600 mb-4">
-              Please switch to Lisk Sepolia network.
+              Please switch to Base Sepolia network.
             </p>
           </div>
         ) : (
@@ -97,7 +97,7 @@ export default function FaucetPage() {
               <h3 className="font-semibold text-gray-800 mb-2">Faucet Details</h3>
               <ul className="text-sm text-gray-600 space-y-1">
                 <li>Each claim gives you 10,000,000 IDRX</li>
-                <li>For testing purposes only on Lisk Sepolia</li>
+                <li>For testing purposes only on Base Sepolia</li>
                 <li>No cooldown - claim as many times as needed</li>
               </ul>
             </div>
@@ -114,7 +114,7 @@ export default function FaucetPage() {
               <div className="mb-4 p-3 bg-green-50 text-green-600 rounded-lg">
                 <p className="font-medium">Tokens claimed successfully!</p>
                 <a
-                  href={`${LISK_SEPOLIA.blockExplorerUrls[0]}/tx/${txHash}`}
+                  href={`${BASE_SEPOLIA.blockExplorerUrls[0]}/tx/${txHash}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-primary-600 underline text-sm"
@@ -167,12 +167,12 @@ export default function FaucetPage() {
         <p>
           Need ETH for gas? Use the{' '}
           <a
-            href="https://sepolia-faucet.lisk.com/"
+            href="https://www.coinbase.com/faucets/base-ethereum-goerli-faucet"
             target="_blank"
             rel="noopener noreferrer"
             className="text-primary-600 underline"
           >
-            Lisk Sepolia Faucet
+            Base Sepolia Faucet
           </a>
         </p>
       </div>

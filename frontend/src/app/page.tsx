@@ -5,7 +5,7 @@ import { ethers, Contract } from 'ethers';
 import { ProjectCard } from '@/components/ProjectCard';
 import { useWalletContext } from '@/components/WalletProvider';
 import { ProjectDisplay, ProjectState } from '@/types';
-import { TANI_VAULT_ABI, CONTRACT_ADDRESSES, LISK_SEPOLIA } from '@/lib/contracts';
+import { TANI_VAULT_ABI, CONTRACT_ADDRESSES, BASE_SEPOLIA } from '@/lib/contracts';
 
 export default function HomePage() {
   const { isConnected, isCorrectNetwork } = useWalletContext();
@@ -23,7 +23,7 @@ export default function HomePage() {
       setError(null);
 
       // Use public RPC to fetch projects
-      const provider = new ethers.JsonRpcProvider(LISK_SEPOLIA.rpcUrls[0]);
+      const provider = new ethers.JsonRpcProvider(BASE_SEPOLIA.rpcUrls[0]);
       const vault = new Contract(
         CONTRACT_ADDRESSES.TANI_VAULT,
         TANI_VAULT_ABI,
@@ -111,7 +111,7 @@ export default function HomePage() {
       {isConnected && !isCorrectNetwork && (
         <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-8">
           <p className="text-red-800">
-            Please switch to Lisk Sepolia network to interact with projects.
+            Please switch to Base Sepolia network to interact with projects.
           </p>
         </div>
       )}

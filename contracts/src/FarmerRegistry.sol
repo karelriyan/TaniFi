@@ -7,7 +7,7 @@ import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 /// @title FarmerRegistry - Soulbound Identity Token for TaniFi Farmers
 /// @notice Non-transferable NFT representing farmer identity and reputation
 /// @dev Implements Soulbound Token (SBT) pattern - tokens cannot be transferred after minting
-/// @author TaniFi Team - Lisk Builders Challenge 2026
+/// @author TaniFi Team - Base Indonesia Hackathon 2025
 
 contract FarmerRegistry is ERC721, Ownable {
     // ============ Structs ============

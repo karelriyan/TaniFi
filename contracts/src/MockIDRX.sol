@@ -8,7 +8,7 @@ import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 /// @title MockIDRX - Mock Indonesian Rupiah Stablecoin
 /// @notice Test token representing IDRX stablecoin for TaniFi development
 /// @dev ERC20 implementation with 2 decimals (Rupiah convention) and minting capability
-/// @author TaniFi Team - Lisk Builders Challenge 2026
+/// @author TaniFi Team - Base Indonesia Hackathon 2025
 
 contract MockIDRX is ERC20, ERC20Burnable, Ownable {
     // ============ State Variables ============

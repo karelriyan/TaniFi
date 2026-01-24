@@ -23,14 +23,28 @@ export const IDRX_ABI = [
   'function faucet()',
 ] as const;
 
-// Contract addresses on Lisk Sepolia (Deployed January 2026)
+// Contract addresses on Base Sepolia (Deployed January 24, 2026)
 export const CONTRACT_ADDRESSES = {
-  TANI_VAULT: process.env.NEXT_PUBLIC_TANI_VAULT_ADDRESS || '0xB39c94B718A75c3005F06f977224cF52AD7cAe49',
-  IDRX: process.env.NEXT_PUBLIC_IDRX_ADDRESS || '0x01653fA9F9e9411ac3028f6b4A54f39D68edEA44',
-  FARMER_REGISTRY: process.env.NEXT_PUBLIC_FARMER_REGISTRY_ADDRESS || '0x01A0789ae050370AC87d38Fd42b5371Ea0128bA4',
+  TANI_VAULT: process.env.NEXT_PUBLIC_TANI_VAULT_ADDRESS || '0xEAD7D9095e16fA298d5d66ab129d28638a1deb50',
+  IDRX: process.env.NEXT_PUBLIC_IDRX_ADDRESS || '0xe22c8b828A60c95F9Ca3ad9275B30C3F58Bd0110',
+  FARMER_REGISTRY: process.env.NEXT_PUBLIC_FARMER_REGISTRY_ADDRESS || '0x0fc35d36cAE59077739f93B513F9a5f5a52E4409',
 };
 
-// Network configuration
+// Network configuration for Base Sepolia
+export const BASE_SEPOLIA = {
+  chainId: 84532,
+  chainIdHex: '0x14a34',
+  chainName: 'Base Sepolia',
+  nativeCurrency: {
+    name: 'Ethereum',
+    symbol: 'ETH',
+    decimals: 18,
+  },
+  rpcUrls: ['https://sepolia.base.org'],
+  blockExplorerUrls: ['https://sepolia.basescan.org'],
+};
+
+// Legacy: Lisk Sepolia (deprecated - keeping for reference)
 export const LISK_SEPOLIA = {
   chainId: 4202,
   chainIdHex: '0x106a',

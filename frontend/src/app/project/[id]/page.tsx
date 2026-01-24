@@ -5,7 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { ethers, Contract } from 'ethers';
 import { useWalletContext } from '@/components/WalletProvider';
 import { ProjectDisplay, ProjectState } from '@/types';
-import { TANI_VAULT_ABI, IDRX_ABI, CONTRACT_ADDRESSES, LISK_SEPOLIA } from '@/lib/contracts';
+import { TANI_VAULT_ABI, IDRX_ABI, CONTRACT_ADDRESSES, BASE_SEPOLIA } from '@/lib/contracts';
 
 const STATE_COLORS: Record<ProjectState, string> = {
   [ProjectState.FUNDRAISING]: 'bg-blue-100 text-blue-800',
@@ -55,7 +55,7 @@ export default function ProjectDetailPage() {
   const fetchProjectDetails = async () => {
     try {
       setLoading(true);
-      const rpcProvider = new ethers.JsonRpcProvider(LISK_SEPOLIA.rpcUrls[0]);
+      const rpcProvider = new ethers.JsonRpcProvider(BASE_SEPOLIA.rpcUrls[0]);
       const vault = new Contract(CONTRACT_ADDRESSES.TANI_VAULT, TANI_VAULT_ABI, rpcProvider);
 
       const projectData = await vault.getProject(projectId);
@@ -88,7 +88,7 @@ export default function ProjectDetailPage() {
     if (!address || !provider) return;
 
     try {
-      const rpcProvider = new ethers.JsonRpcProvider(LISK_SEPOLIA.rpcUrls[0]);
+      const rpcProvider = new ethers.JsonRpcProvider(BASE_SEPOLIA.rpcUrls[0]);
       const vault = new Contract(CONTRACT_ADDRESSES.TANI_VAULT, TANI_VAULT_ABI, rpcProvider);
       const idrx = new Contract(CONTRACT_ADDRESSES.IDRX, IDRX_ABI, rpcProvider);
 
@@ -270,7 +270,7 @@ export default function ProjectDetailPage() {
               </p>
             ) : !isCorrectNetwork ? (
               <p className="text-amber-600 text-sm">
-                Please switch to Lisk Sepolia network.
+                Please switch to Base Sepolia network.
               </p>
             ) : project.state !== ProjectState.FUNDRAISING ? (
               <p className="text-gray-600 text-sm">
@@ -320,7 +320,7 @@ export default function ProjectDetailPage() {
                   <div className="mb-4 p-3 bg-green-50 text-green-600 text-sm rounded-lg">
                     Transaction submitted!
                     <a
-                      href={`${LISK_SEPOLIA.blockExplorerUrls[0]}/tx/${txHash}`}
+                      href={`${BASE_SEPOLIA.blockExplorerUrls[0]}/tx/${txHash}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="block text-primary-600 underline mt-1"

@@ -9,7 +9,7 @@ import {Pausable} from "@openzeppelin/contracts/utils/Pausable.sol";
 /// @title TaniVault - Sharia-Compliant Agricultural Finance Protocol
 /// @notice Core vault implementing Musyarakah (profit-sharing) for agricultural projects
 /// @dev Manages pooling of investor funds, project lifecycle, and profit distribution
-/// @author TaniFi Team - Lisk Builders Challenge 2026
+/// @author TaniFi Team - Base Indonesia Hackathon 2025
 
 contract TaniVault is Ownable, ReentrancyGuard, Pausable {
     // ============ Enums ============

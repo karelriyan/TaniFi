@@ -5,7 +5,7 @@ import { ethers, Contract } from 'ethers';
 import Link from 'next/link';
 import { useWalletContext } from '@/components/WalletProvider';
 import { ProjectState } from '@/types';
-import { TANI_VAULT_ABI, IDRX_ABI, CONTRACT_ADDRESSES, LISK_SEPOLIA } from '@/lib/contracts';
+import { TANI_VAULT_ABI, IDRX_ABI, CONTRACT_ADDRESSES, BASE_SEPOLIA } from '@/lib/contracts';
 
 interface InvestmentItem {
   projectId: number;
@@ -36,7 +36,7 @@ export default function DashboardPage() {
 
     try {
       setLoading(true);
-      const provider = new ethers.JsonRpcProvider(LISK_SEPOLIA.rpcUrls[0]);
+      const provider = new ethers.JsonRpcProvider(BASE_SEPOLIA.rpcUrls[0]);
       const vault = new Contract(CONTRACT_ADDRESSES.TANI_VAULT, TANI_VAULT_ABI, provider);
       const idrx = new Contract(CONTRACT_ADDRESSES.IDRX, IDRX_ABI, provider);
 
@@ -115,7 +115,7 @@ export default function DashboardPage() {
           Wrong Network
         </h1>
         <p className="text-gray-600">
-          Please switch to Lisk Sepolia network to view your investments.
+          Please switch to Base Sepolia network to view your investments.
         </p>
       </div>
     );

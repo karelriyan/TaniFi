@@ -7,8 +7,8 @@ import {MockIDRX} from "../src/MockIDRX.sol";
 import {FarmerRegistry} from "../src/FarmerRegistry.sol";
 
 /// @title TaniFi Deployment Script
-/// @notice Foundry script that deploys all TaniFi contracts to Lisk Sepolia
-/// @dev Run with: forge script script/Deploy.s.sol --rpc-url $LISK_RPC_URL --broadcast
+/// @notice Foundry script that deploys all TaniFi contracts to Base Sepolia
+/// @dev Run with: forge script script/Deploy.s.sol --rpc-url $BASE_RPC_URL --broadcast
 contract Deploy is Script {
     function run() external {
         uint256 deployerKey = vm.envUint("PRIVATE_KEY");

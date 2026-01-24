@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { ethers, BrowserProvider, JsonRpcSigner } from 'ethers';
-import { LISK_SEPOLIA } from '@/lib/contracts';
+import { BASE_SEPOLIA } from '@/lib/contracts';
 
 interface WalletState {
   address: string | null;
@@ -42,7 +42,7 @@ export function useWallet() {
           address,
           chainId,
           isConnected: true,
-          isCorrectNetwork: chainId === LISK_SEPOLIA.chainId,
+          isCorrectNetwork: chainId === BASE_SEPOLIA.chainId,
           signer,
           provider,
         });
@@ -107,7 +107,7 @@ export function useWallet() {
         address,
         chainId,
         isConnected: true,
-        isCorrectNetwork: chainId === LISK_SEPOLIA.chainId,
+        isCorrectNetwork: chainId === BASE_SEPOLIA.chainId,
         signer,
         provider,
       });
@@ -135,7 +135,7 @@ export function useWallet() {
     try {
       await window.ethereum.request({
         method: 'wallet_switchEthereumChain',
-        params: [{ chainId: LISK_SEPOLIA.chainIdHex }],
+        params: [{ chainId: BASE_SEPOLIA.chainIdHex }],
       });
     } catch (switchError: any) {
       // Chain not added, try to add it
@@ -145,16 +145,16 @@ export function useWallet() {
             method: 'wallet_addEthereumChain',
             params: [
               {
-                chainId: LISK_SEPOLIA.chainIdHex,
-                chainName: LISK_SEPOLIA.chainName,
-                nativeCurrency: LISK_SEPOLIA.nativeCurrency,
-                rpcUrls: LISK_SEPOLIA.rpcUrls,
-                blockExplorerUrls: LISK_SEPOLIA.blockExplorerUrls,
+                chainId: BASE_SEPOLIA.chainIdHex,
+                chainName: BASE_SEPOLIA.chainName,
+                nativeCurrency: BASE_SEPOLIA.nativeCurrency,
+                rpcUrls: BASE_SEPOLIA.rpcUrls,
+                blockExplorerUrls: BASE_SEPOLIA.blockExplorerUrls,
               },
             ],
           });
         } catch (addError) {
-          setError('Failed to add Lisk Sepolia network');
+          setError('Failed to add Base Sepolia network');
         }
       }
     }

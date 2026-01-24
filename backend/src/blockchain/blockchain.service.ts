@@ -70,8 +70,8 @@ export class BlockchainService implements OnModuleInit {
 
   private async initializeProvider() {
     const rpcUrl = this.configService.get<string>(
-      'LISK_RPC_URL',
-      NETWORK_CONFIG.LISK_SEPOLIA.rpcUrl,
+      'BASE_RPC_URL',
+      NETWORK_CONFIG.BASE_SEPOLIA.rpcUrl,
     );
 
     this.provider = new JsonRpcProvider(rpcUrl);
@@ -99,7 +99,7 @@ export class BlockchainService implements OnModuleInit {
   }
 
   private async initializeContracts() {
-    const addresses = CONTRACT_ADDRESSES.LISK_SEPOLIA;
+    const addresses = CONTRACT_ADDRESSES.BASE_SEPOLIA;
 
     // Read-only instances
     this.taniVaultReadOnly = new Contract(

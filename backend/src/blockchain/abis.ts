@@ -104,17 +104,30 @@ export const FARMER_REGISTRY_ABI = [
   'function removeKYCAdmin(address admin)',
 ] as const;
 
-// Contract addresses on Lisk Sepolia (Deployed January 2026)
+// Contract addresses (Deployed January 24, 2026)
 export const CONTRACT_ADDRESSES = {
+  BASE_SEPOLIA: {
+    TANI_VAULT: process.env.TANI_VAULT_ADDRESS || '0xEAD7D9095e16fA298d5d66ab129d28638a1deb50',
+    IDRX: process.env.IDRX_ADDRESS || '0xe22c8b828A60c95F9Ca3ad9275B30C3F58Bd0110',
+    FARMER_REGISTRY: process.env.FARMER_REGISTRY_ADDRESS || '0x0fc35d36cAE59077739f93B513F9a5f5a52E4409',
+  },
+  // Legacy: Lisk Sepolia (deprecated)
   LISK_SEPOLIA: {
-    TANI_VAULT: process.env.TANI_VAULT_ADDRESS || '0xB39c94B718A75c3005F06f977224cF52AD7cAe49',
-    IDRX: process.env.IDRX_ADDRESS || '0x01653fA9F9e9411ac3028f6b4A54f39D68edEA44',
-    FARMER_REGISTRY: process.env.FARMER_REGISTRY_ADDRESS || '0x01A0789ae050370AC87d38Fd42b5371Ea0128bA4',
+    TANI_VAULT: '0xB39c94B718A75c3005F06f977224cF52AD7cAe49',
+    IDRX: '0x01653fA9F9e9411ac3028f6b4A54f39D68edEA44',
+    FARMER_REGISTRY: '0x01A0789ae050370AC87d38Fd42b5371Ea0128bA4',
   },
 } as const;
 
 // Network configuration
 export const NETWORK_CONFIG = {
+  BASE_SEPOLIA: {
+    chainId: 84532,
+    name: 'Base Sepolia',
+    rpcUrl: process.env.BASE_RPC_URL || 'https://sepolia.base.org',
+    blockExplorer: 'https://sepolia.basescan.org',
+  },
+  // Legacy: Lisk Sepolia (deprecated)
   LISK_SEPOLIA: {
     chainId: 4202,
     name: 'Lisk Sepolia',
