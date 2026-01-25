@@ -131,7 +131,7 @@ export default function HomePage() {
 
       {loading ? (
         <div className="flex justify-center items-center py-12">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
         </div>
       ) : error ? (
         <div className="text-center py-12 glass-card rounded-xl">

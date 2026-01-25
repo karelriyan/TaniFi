@@ -101,13 +101,13 @@ export function CooperativeDashboard() {
 
   if (!isConnected) {
     return (
-      <div className="max-w-6xl mx-auto bg-white rounded-xl shadow-lg p-8">
+      <div className="max-w-6xl mx-auto glass-card rounded-2xl shadow-2xl p-8">
         <div className="text-center py-12">
           <div className="text-6xl mb-4">🔒</div>
-          <h2 className="text-2xl font-bold text-gray-800 mb-2">
+          <h2 className="text-2xl font-bold gradient-text mb-2">
             Autentikasi Diperlukan
           </h2>
-          <p className="text-gray-600 mb-6">
+          <p className="text-gray-700 mb-6">
             Hubungkan wallet Anda untuk mengakses dashboard koperasi
           </p>
         </div>
@@ -116,16 +116,16 @@ export function CooperativeDashboard() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto bg-white rounded-xl shadow-lg p-8">
+    <div className="max-w-6xl mx-auto glass-card rounded-2xl shadow-2xl p-8">
       {/* Header */}
       <div className="mb-6">
-        <h2 className="text-2xl font-bold text-gray-800 mb-2">
+        <h2 className="text-2xl font-bold gradient-text mb-2">
           Dashboard Koperasi 🏛️
         </h2>
-        <p className="text-gray-600">
+        <p className="text-gray-700">
           Kelola dan verifikasi pendaftaran petani
         </p>
-        <p className="text-sm text-gray-500 mt-1">
+        <p className="text-sm text-gray-600 mt-1 font-medium">
           Connected as: {address?.slice(0, 6)}...{address?.slice(-4)}
         </p>
       </div>
@@ -134,30 +134,30 @@ export function CooperativeDashboard() {
       <div className="mb-6 flex gap-3">
         <button
           onClick={() => setSelectedStatus('PENDING')}
-          className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+          className={`px-5 py-2.5 rounded-lg font-semibold transition-all duration-300 ${
             selectedStatus === 'PENDING'
-              ? 'bg-amber-500 text-white'
-              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-white shadow-lg'
+              : 'glass text-gray-700 hover:glass-strong'
           }`}
         >
           Pending
         </button>
         <button
           onClick={() => setSelectedStatus('VERIFIED')}
-          className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+          className={`px-5 py-2.5 rounded-lg font-semibold transition-all duration-300 ${
             selectedStatus === 'VERIFIED'
-              ? 'bg-green-500 text-white'
-              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              ? 'bg-gradient-to-r from-primary-500 to-primary-600 text-white shadow-lg'
+              : 'glass text-gray-700 hover:glass-strong'
           }`}
         >
           Verified
         </button>
         <button
           onClick={() => setSelectedStatus('REJECTED')}
-          className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+          className={`px-5 py-2.5 rounded-lg font-semibold transition-all duration-300 ${
             selectedStatus === 'REJECTED'
-              ? 'bg-red-500 text-white'
-              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              ? 'bg-gradient-to-r from-red-500 to-red-600 text-white shadow-lg'
+              : 'glass text-gray-700 hover:glass-strong'
           }`}
         >
           Rejected
@@ -166,8 +166,8 @@ export function CooperativeDashboard() {
 
       {/* Error Message */}
       {error && (
-        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
-          <p className="text-red-800">❌ {error}</p>
+        <div className="mb-6 p-4 glass border-red-300 rounded-lg">
+          <p className="text-red-800 font-medium">❌ {error}</p>
         </div>
       )}
 
@@ -175,7 +175,7 @@ export function CooperativeDashboard() {
       {isLoading && (
         <div className="text-center py-12">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto"></div>
-          <p className="text-gray-600 mt-4">Memuat data...</p>
+          <p className="text-gray-700 mt-4 font-medium">Memuat data...</p>
         </div>
       )}
 
@@ -183,29 +183,29 @@ export function CooperativeDashboard() {
       {!isLoading && farmers.length === 0 && (
         <div className="text-center py-12">
           <div className="text-6xl mb-4">📋</div>
-          <p className="text-gray-600">Tidak ada petani dengan status {selectedStatus}</p>
+          <p className="text-gray-700 font-medium">Tidak ada petani dengan status {selectedStatus}</p>
         </div>
       )}
 
       {!isLoading && farmers.length > 0 && (
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto glass-dark rounded-xl p-1">
           <table className="w-full">
             <thead>
-              <tr className="bg-gray-50 border-b border-gray-200">
-                <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Nama</th>
-                <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">NIK</th>
-                <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Luas Lahan</th>
-                <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Lokasi</th>
-                <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Metode</th>
-                <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Tanggal</th>
+              <tr className="glass-strong border-b border-primary-200">
+                <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800">Nama</th>
+                <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800">NIK</th>
+                <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800">Luas Lahan</th>
+                <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800">Lokasi</th>
+                <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800">Metode</th>
+                <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800">Tanggal</th>
                 {selectedStatus === 'PENDING' && (
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Aksi</th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800">Aksi</th>
                 )}
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-200">
+            <tbody className="divide-y divide-primary-100">
               {farmers.map((farmer) => (
-                <tr key={farmer.id} className="hover:bg-gray-50">
+                <tr key={farmer.id} className="hover:glass-strong transition-all">
                   <td className="px-4 py-4 text-sm text-gray-800">
                     {farmer.farmerName || 'N/A'}
                   </td>
@@ -219,10 +219,10 @@ export function CooperativeDashboard() {
                     {farmer.location || 'N/A'}
                   </td>
                   <td className="px-4 py-4 text-sm">
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                    <span className={`px-2.5 py-1 rounded-full text-xs font-semibold glass ${
                       farmer.registrationMethod === 'USSD'
-                        ? 'bg-purple-100 text-purple-800'
-                        : 'bg-blue-100 text-blue-800'
+                        ? 'border-purple-300 text-purple-800'
+                        : 'border-primary-300 text-primary-800'
                     }`}>
                       {farmer.registrationMethod}
                     </span>
@@ -236,14 +236,14 @@ export function CooperativeDashboard() {
                         <button
                           onClick={() => handleValidate(farmer.id, 'VERIFY')}
                           disabled={processingId === farmer.id}
-                          className="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed text-xs font-medium"
+                          className="px-3 py-1.5 bg-gradient-to-r from-primary-500 to-primary-600 text-white rounded-lg hover:from-primary-600 hover:to-primary-700 disabled:opacity-50 disabled:cursor-not-allowed text-xs font-semibold shadow-md hover:shadow-lg transition-all"
                         >
                           {processingId === farmer.id ? '...' : '✓ Verify'}
                         </button>
                         <button
                           onClick={() => handleValidate(farmer.id, 'REJECT')}
                           disabled={processingId === farmer.id}
-                          className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed text-xs font-medium"
+                          className="px-3 py-1.5 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-lg hover:from-red-600 hover:to-red-700 disabled:opacity-50 disabled:cursor-not-allowed text-xs font-semibold shadow-md hover:shadow-lg transition-all"
                         >
                           {processingId === farmer.id ? '...' : '✗ Reject'}
                         </button>
@@ -259,10 +259,10 @@ export function CooperativeDashboard() {
 
       {/* Stats */}
       {!isLoading && farmers.length > 0 && (
-        <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-          <p className="text-sm text-gray-600">
-            Total: <span className="font-semibold">{farmers.length}</span> petani dengan status{' '}
-            <span className="font-semibold">{selectedStatus}</span>
+        <div className="mt-6 p-4 glass rounded-lg border-primary-200">
+          <p className="text-sm text-gray-700 font-medium">
+            Total: <span className="font-bold gradient-text">{farmers.length}</span> petani dengan status{' '}
+            <span className="font-bold text-primary-700">{selectedStatus}</span>
           </p>
         </div>
       )}

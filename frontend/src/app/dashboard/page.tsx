@@ -96,11 +96,11 @@ export default function DashboardPage() {
   if (!isConnected) {
     return (
       <div className="max-w-4xl mx-auto text-center py-20">
-        <span className="text-6xl mb-6 block">🔒</span>
-        <h1 className="text-2xl font-bold text-gray-800 mb-4">
+        <span className="text-6xl mb-6 block drop-shadow-lg">🔒</span>
+        <h1 className="text-2xl font-bold gradient-text mb-4">
           Connect Your Wallet
         </h1>
-        <p className="text-gray-600">
+        <p className="text-gray-700 font-medium">
           Please connect your wallet to view your investments.
         </p>
       </div>
@@ -110,11 +110,11 @@ export default function DashboardPage() {
   if (!isCorrectNetwork) {
     return (
       <div className="max-w-4xl mx-auto text-center py-20">
-        <span className="text-6xl mb-6 block">🔄</span>
-        <h1 className="text-2xl font-bold text-gray-800 mb-4">
+        <span className="text-6xl mb-6 block drop-shadow-lg">🔄</span>
+        <h1 className="text-2xl font-bold gradient-text mb-4">
           Wrong Network
         </h1>
-        <p className="text-gray-600">
+        <p className="text-gray-700 font-medium">
           Please switch to Base Sepolia network to view your investments.
         </p>
       </div>
@@ -123,20 +123,20 @@ export default function DashboardPage() {
 
   return (
     <div className="max-w-4xl mx-auto">
-      <h1 className="text-3xl font-bold text-gray-800 mb-8">My Dashboard</h1>
+      <h1 className="text-3xl font-bold gradient-text mb-8">My Dashboard</h1>
 
       {/* Balance Card */}
-      <div className="bg-white rounded-xl shadow-md p-6 mb-8">
+      <div className="glass-card rounded-2xl shadow-xl p-6 mb-8">
         <div className="grid md:grid-cols-2 gap-6">
           <div>
-            <p className="text-sm text-gray-600 mb-1">Wallet Address</p>
-            <p className="font-mono text-sm bg-gray-100 p-2 rounded">
+            <p className="text-sm text-gray-700 mb-2 font-medium">Wallet Address</p>
+            <p className="font-mono text-sm glass p-3 rounded-lg border-primary-200">
               {address}
             </p>
           </div>
           <div>
-            <p className="text-sm text-gray-600 mb-1">IDRX Balance</p>
-            <p className="text-2xl font-bold text-primary-600">
+            <p className="text-sm text-gray-700 mb-2 font-medium">IDRX Balance</p>
+            <p className="text-2xl font-bold gradient-text">
               Rp {Number(idrxBalance).toLocaleString('id-ID')}
             </p>
           </div>
@@ -144,19 +144,19 @@ export default function DashboardPage() {
       </div>
 
       {/* Investments */}
-      <h2 className="text-xl font-bold text-gray-800 mb-4">My Investments</h2>
+      <h2 className="text-xl font-bold gradient-text mb-4">My Investments</h2>
 
       {loading ? (
         <div className="flex justify-center py-12">
           <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary-600"></div>
         </div>
       ) : investments.length === 0 ? (
-        <div className="bg-white rounded-xl shadow-md p-8 text-center">
-          <span className="text-5xl mb-4 block">📊</span>
-          <p className="text-gray-600 mb-4">You haven't made any investments yet.</p>
+        <div className="glass-card rounded-2xl shadow-xl p-8 text-center">
+          <span className="text-5xl mb-4 block drop-shadow-lg">📊</span>
+          <p className="text-gray-700 mb-4 font-medium">You haven't made any investments yet.</p>
           <Link
             href="/"
-            className="inline-block px-6 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700"
+            className="inline-block px-6 py-2.5 bg-gradient-to-r from-primary-600 to-primary-700 text-white font-semibold rounded-lg hover:from-primary-700 hover:to-primary-800 transition-all duration-300 shadow-lg hover:shadow-xl"
           >
             Browse Projects
           </Link>
@@ -166,26 +166,26 @@ export default function DashboardPage() {
           {investments.map((inv) => (
             <div
               key={inv.projectId}
-              className="bg-white rounded-xl shadow-md p-6 flex justify-between items-center"
+              className="glass-card rounded-2xl shadow-lg p-6 flex justify-between items-center hover:shadow-2xl transition-all"
             >
               <div>
                 <Link
                   href={`/project/${inv.projectId}`}
-                  className="text-lg font-semibold text-gray-800 hover:text-primary-600"
+                  className="text-lg font-semibold gradient-text hover:opacity-80 transition-opacity"
                 >
                   Project #{inv.projectId}
                 </Link>
-                <p className="text-sm text-gray-500">Status: {inv.stateName}</p>
+                <p className="text-sm text-gray-600 font-medium">Status: {inv.stateName}</p>
               </div>
               <div className="text-right">
-                <p className="text-lg font-bold text-primary-600">
+                <p className="text-lg font-bold gradient-text">
                   Rp {Number(inv.amount).toLocaleString('id-ID')}
                 </p>
                 {inv.canWithdraw && (
                   <button
                     onClick={() => handleWithdraw(inv.projectId)}
                     disabled={withdrawing === inv.projectId}
-                    className="mt-2 px-4 py-1 bg-green-500 text-white text-sm rounded-lg hover:bg-green-600 disabled:opacity-50"
+                    className="mt-2 px-4 py-1.5 bg-gradient-to-r from-primary-500 to-primary-600 text-white text-sm font-semibold rounded-lg hover:from-primary-600 hover:to-primary-700 disabled:opacity-50 shadow-md hover:shadow-lg transition-all"
                   >
                     {withdrawing === inv.projectId ? 'Withdrawing...' : 'Withdraw Returns'}
                   </button>

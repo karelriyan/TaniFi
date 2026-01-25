@@ -92,29 +92,29 @@ export function FarmerRegistrationForm() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto bg-white rounded-xl shadow-lg p-8">
+    <div className="max-w-2xl mx-auto glass-card rounded-2xl shadow-2xl p-8">
       <div className="mb-6">
-        <h2 className="text-2xl font-bold text-gray-800 mb-2">
+        <h2 className="text-2xl font-bold gradient-text mb-2">
           Pendaftaran Petani 🌾
         </h2>
-        <p className="text-gray-600">
+        <p className="text-gray-700">
           Daftar untuk mendapatkan akses pembiayaan usaha tani
         </p>
       </div>
 
       {success && (
-        <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
-          <p className="text-green-800 font-medium">
+        <div className="mb-6 p-4 glass border-primary-300 rounded-lg">
+          <p className="text-primary-800 font-medium">
             ✅ Pendaftaran berhasil! Data Anda sedang diverifikasi oleh koperasi.
           </p>
-          <p className="text-green-600 text-sm mt-1">
+          <p className="text-primary-700 text-sm mt-1">
             Anda akan dihubungi setelah verifikasi selesai.
           </p>
         </div>
       )}
 
       {error && (
-        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+        <div className="mb-6 p-4 glass border-red-300 rounded-lg">
           <p className="text-red-800 font-medium">❌ {error}</p>
         </div>
       )}
@@ -133,7 +133,7 @@ export function FarmerRegistrationForm() {
             onChange={handleChange}
             placeholder="Contoh: Budi Santoso"
             required
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+            className="w-full px-4 py-3 glass border-primary-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-400 transition-all"
           />
         </div>
 
@@ -151,7 +151,7 @@ export function FarmerRegistrationForm() {
             placeholder="16 digit NIK"
             maxLength={16}
             required
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+            className="w-full px-4 py-3 glass border-primary-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-400 transition-all"
           />
           <p className="text-sm text-gray-500 mt-1">Harus 16 digit sesuai KTP</p>
         </div>
@@ -169,7 +169,7 @@ export function FarmerRegistrationForm() {
             onChange={handleChange}
             placeholder="081234567890"
             required
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+            className="w-full px-4 py-3 glass border-primary-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-400 transition-all"
           />
           <p className="text-sm text-gray-500 mt-1">Format: 08xxx atau +62xxx</p>
         </div>
@@ -189,7 +189,7 @@ export function FarmerRegistrationForm() {
             step="0.1"
             min="0"
             required
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+            className="w-full px-4 py-3 glass border-primary-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-400 transition-all"
           />
         </div>
 
@@ -206,18 +206,18 @@ export function FarmerRegistrationForm() {
             onChange={handleChange}
             placeholder="Contoh: Desa Karangmangu, Kec. Baturaden, Kab. Banyumas"
             required
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+            className="w-full px-4 py-3 glass border-primary-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-400 transition-all"
           />
         </div>
 
         {/* Wallet Address (optional) */}
         {isConnected && (
-          <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-            <p className="text-sm text-blue-800">
-              <span className="font-medium">Wallet Connected:</span>{' '}
+          <div className="p-4 glass border-primary-300 rounded-lg">
+            <p className="text-sm text-primary-800 font-medium">
+              <span className="font-semibold">Wallet Connected:</span>{' '}
               {address?.slice(0, 6)}...{address?.slice(-4)}
             </p>
-            <p className="text-xs text-blue-600 mt-1">
+            <p className="text-xs text-primary-700 mt-1">
               Alamat ini akan dikaitkan dengan akun petani Anda
             </p>
           </div>
@@ -227,16 +227,16 @@ export function FarmerRegistrationForm() {
         <button
           type="submit"
           disabled={isSubmitting}
-          className="w-full bg-primary-600 text-white font-medium py-3 px-6 rounded-lg hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          className="w-full bg-gradient-to-r from-primary-600 to-primary-700 text-white font-semibold py-3.5 px-6 rounded-lg hover:from-primary-700 hover:to-primary-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
         >
           {isSubmitting ? 'Mendaftar...' : 'Daftar Sekarang'}
         </button>
       </form>
 
       {/* Info Section */}
-      <div className="mt-8 p-4 bg-gray-50 rounded-lg">
-        <h3 className="font-medium text-gray-800 mb-2">ℹ️ Informasi</h3>
-        <ul className="text-sm text-gray-600 space-y-1">
+      <div className="mt-8 p-4 glass rounded-lg border-primary-200">
+        <h3 className="font-semibold gradient-text mb-2">ℹ️ Informasi</h3>
+        <ul className="text-sm text-gray-700 space-y-1">
           <li>• Data Anda akan diverifikasi oleh koperasi</li>
           <li>• Proses verifikasi memakan waktu 1-3 hari kerja</li>
           <li>• Anda juga bisa daftar via USSD dengan dial *123# (coming soon)</li>

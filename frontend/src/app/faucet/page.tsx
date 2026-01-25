@@ -62,62 +62,62 @@ export default function FaucetPage() {
   return (
     <div className="max-w-2xl mx-auto">
       <div className="text-center mb-8">
-        <span className="text-6xl mb-4 block">💧</span>
-        <h1 className="text-3xl font-bold text-gray-800 mb-2">IDRX Test Faucet</h1>
-        <p className="text-gray-600">
+        <span className="text-6xl mb-4 block drop-shadow-lg">💧</span>
+        <h1 className="text-3xl font-bold gradient-text mb-2">IDRX Test Faucet</h1>
+        <p className="text-gray-700 font-medium">
           Get free test IDRX tokens to try out TaniFi on Base Sepolia.
         </p>
       </div>
 
-      <div className="bg-white rounded-xl shadow-md p-8">
+      <div className="glass-card rounded-2xl shadow-2xl p-8">
         {!isConnected ? (
           <div className="text-center">
-            <p className="text-gray-600 mb-4">
+            <p className="text-gray-700 mb-4 font-medium">
               Connect your wallet to claim test tokens.
             </p>
           </div>
         ) : !isCorrectNetwork ? (
           <div className="text-center">
-            <p className="text-amber-600 mb-4">
+            <p className="text-amber-700 mb-4 font-medium">
               Please switch to Base Sepolia network.
             </p>
           </div>
         ) : (
           <>
             {/* Current Balance */}
-            <div className="mb-6 p-4 bg-primary-50 rounded-lg text-center">
-              <p className="text-sm text-primary-600 mb-1">Your IDRX Balance</p>
-              <p className="text-3xl font-bold text-primary-700">
+            <div className="mb-6 p-4 glass-strong rounded-xl text-center border-primary-300">
+              <p className="text-sm text-primary-700 mb-1 font-medium">Your IDRX Balance</p>
+              <p className="text-3xl font-bold gradient-text">
                 {loading ? '...' : `Rp ${Number(balance).toLocaleString('id-ID')}`}
               </p>
             </div>
 
             {/* Faucet Info */}
-            <div className="mb-6 p-4 bg-gray-50 rounded-lg">
-              <h3 className="font-semibold text-gray-800 mb-2">Faucet Details</h3>
-              <ul className="text-sm text-gray-600 space-y-1">
-                <li>Each claim gives you 10,000,000 IDRX</li>
-                <li>For testing purposes only on Base Sepolia</li>
-                <li>No cooldown - claim as many times as needed</li>
+            <div className="mb-6 p-4 glass rounded-xl border-primary-200">
+              <h3 className="font-semibold gradient-text mb-2">Faucet Details</h3>
+              <ul className="text-sm text-gray-700 space-y-1">
+                <li>• Each claim gives you 10,000,000 IDRX</li>
+                <li>• For testing purposes only on Base Sepolia</li>
+                <li>• No cooldown - claim as many times as needed</li>
               </ul>
             </div>
 
             {/* Error Display */}
             {error && (
-              <div className="mb-4 p-3 bg-red-50 text-red-600 rounded-lg text-sm">
-                {error}
+              <div className="mb-4 p-3 glass border-red-300 rounded-lg">
+                <p className="text-red-700 text-sm font-medium">{error}</p>
               </div>
             )}
 
             {/* Success Display */}
             {txHash && (
-              <div className="mb-4 p-3 bg-green-50 text-green-600 rounded-lg">
-                <p className="font-medium">Tokens claimed successfully!</p>
+              <div className="mb-4 p-3 glass border-primary-300 rounded-lg">
+                <p className="font-semibold text-primary-800 mb-1">Tokens claimed successfully!</p>
                 <a
                   href={`${BASE_SEPOLIA.blockExplorerUrls[0]}/tx/${txHash}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-primary-600 underline text-sm"
+                  className="text-primary-600 underline text-sm font-medium"
                 >
                   View transaction on Explorer
                 </a>
@@ -128,7 +128,7 @@ export default function FaucetPage() {
             <button
               onClick={handleClaimFaucet}
               disabled={claiming}
-              className="w-full py-3 bg-primary-600 text-white text-lg font-semibold rounded-lg hover:bg-primary-700 disabled:opacity-50 transition-colors"
+              className="w-full py-3.5 bg-gradient-to-r from-primary-600 to-primary-700 text-white text-lg font-semibold rounded-lg hover:from-primary-700 hover:to-primary-800 disabled:opacity-50 transition-all duration-300 shadow-lg hover:shadow-xl"
             >
               {claiming ? (
                 <span className="flex items-center justify-center">

@@ -8,11 +8,11 @@ interface ProjectCardProps {
 }
 
 const STATE_COLORS: Record<ProjectState, string> = {
-  [ProjectState.FUNDRAISING]: 'bg-blue-100 text-blue-800',
-  [ProjectState.ACTIVE]: 'bg-green-100 text-green-800',
-  [ProjectState.HARVESTED]: 'bg-amber-100 text-amber-800',
-  [ProjectState.FAILED]: 'bg-red-100 text-red-800',
-  [ProjectState.COMPLETED]: 'bg-gray-100 text-gray-800',
+  [ProjectState.FUNDRAISING]: 'glass text-blue-700 border-blue-300',
+  [ProjectState.ACTIVE]: 'glass text-primary-700 border-primary-400',
+  [ProjectState.HARVESTED]: 'glass text-amber-700 border-amber-400',
+  [ProjectState.FAILED]: 'glass text-red-700 border-red-400',
+  [ProjectState.COMPLETED]: 'glass text-gray-700 border-gray-400',
 };
 
 const STATE_NAMES: Record<ProjectState, string> = {
@@ -25,10 +25,11 @@ const STATE_NAMES: Record<ProjectState, string> = {
 
 export function ProjectCard({ project }: ProjectCardProps) {
   return (
-    <div className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow">
+    <div className="glass-card rounded-xl overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:scale-105">
       {/* Project Image/Header */}
-      <div className="h-32 bg-gradient-to-r from-primary-400 to-primary-600 flex items-center justify-center">
-        <span className="text-6xl">
+      <div className="h-32 bg-gradient-to-br from-primary-400 via-primary-500 to-primary-600 flex items-center justify-center relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-t from-primary-700/20 to-transparent"></div>
+        <span className="text-6xl relative z-10 drop-shadow-lg">
           {project.commodity === 'gula_semut' ? '🍯' :
            project.commodity === 'padi' ? '🌾' :
            project.commodity === 'jagung' ? '🌽' : '🌱'}
@@ -55,15 +56,15 @@ export function ProjectCard({ project }: ProjectCardProps) {
         <div className="mb-4">
           <div className="flex justify-between text-sm mb-1">
             <span className="text-gray-600">Funded</span>
-            <span className="font-medium">{project.fundingProgress.toFixed(1)}%</span>
+            <span className="font-semibold gradient-text">{project.fundingProgress.toFixed(1)}%</span>
           </div>
-          <div className="w-full bg-gray-200 rounded-full h-2">
+          <div className="w-full glass-dark rounded-full h-2.5 overflow-hidden">
             <div
-              className="bg-primary-500 h-2 rounded-full transition-all"
+              className="bg-gradient-to-r from-primary-500 via-primary-600 to-primary-700 h-2.5 rounded-full transition-all duration-500 shadow-lg"
               style={{ width: `${Math.min(project.fundingProgress, 100)}%` }}
             />
           </div>
-          <div className="flex justify-between text-xs text-gray-500 mt-1">
+          <div className="flex justify-between text-xs text-gray-600 mt-1.5 font-medium">
             <span>Rp {project.fundedAmount}</span>
             <span>Rp {project.targetAmount}</span>
           </div>
@@ -89,7 +90,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
         {/* Action Button */}
         <Link
           href={`/project/${project.id}`}
-          className="block w-full text-center py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
+          className="block w-full text-center py-2.5 px-4 bg-gradient-to-r from-primary-600 to-primary-700 text-white font-semibold rounded-lg hover:from-primary-700 hover:to-primary-800 transition-all duration-300 shadow-md hover:shadow-xl transform hover:-translate-y-0.5"
         >
           {project.state === ProjectState.FUNDRAISING ? 'Invest Now' : 'View Details'}
         </Link>
