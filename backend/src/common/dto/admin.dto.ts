@@ -88,6 +88,10 @@ export class ListFarmersQueryDto {
   kycStatus?: string;
 
   @IsOptional()
+  @IsString()
+  status?: string; // Alias for kycStatus (for frontend compatibility)
+
+  @IsOptional()
   @IsNumber()
   @Min(1)
   @Max(100)

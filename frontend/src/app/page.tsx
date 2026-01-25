@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { ethers, Contract } from 'ethers';
 import { ProjectCard } from '@/components/ProjectCard';
 import { useWalletContext } from '@/components/WalletProvider';
@@ -74,10 +75,19 @@ export default function HomePage() {
     <div className="max-w-7xl mx-auto">
       {/* Hero Section */}
       <div className="text-center mb-12">
-        <h1 className="text-4xl font-bold text-gray-800 mb-4">
+        <div className="flex justify-center mb-6">
+          <Image
+            src="/tanifi-logo.png"
+            alt="TaniFi Logo"
+            width={100}
+            height={100}
+            className="object-contain"
+          />
+        </div>
+        <h1 className="text-5xl font-bold gradient-text mb-4">
           Invest in Indonesian Agriculture
         </h1>
-        <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+        <p className="text-lg text-gray-700 max-w-2xl mx-auto font-medium">
           TaniFi connects investors with smallholder farmers through Sharia-compliant
           profit sharing. Earn returns while supporting sustainable agriculture.
         </p>
@@ -85,59 +95,59 @@ export default function HomePage() {
 
       {/* Stats Bar */}
       <div className="grid grid-cols-3 gap-6 mb-12">
-        <div className="bg-white rounded-xl p-6 shadow-md text-center">
-          <p className="text-3xl font-bold text-primary-600">{projects.length}</p>
-          <p className="text-gray-600">Active Projects</p>
+        <div className="glass-card rounded-xl p-6 shadow-lg text-center transform hover:scale-105 transition-transform">
+          <p className="text-3xl font-bold gradient-text">{projects.length}</p>
+          <p className="text-gray-700 font-medium">Active Projects</p>
         </div>
-        <div className="bg-white rounded-xl p-6 shadow-md text-center">
-          <p className="text-3xl font-bold text-primary-600">70%</p>
-          <p className="text-gray-600">Investor Share</p>
+        <div className="glass-card rounded-xl p-6 shadow-lg text-center transform hover:scale-105 transition-transform">
+          <p className="text-3xl font-bold gradient-text">70%</p>
+          <p className="text-gray-700 font-medium">Investor Share</p>
         </div>
-        <div className="bg-white rounded-xl p-6 shadow-md text-center">
-          <p className="text-3xl font-bold text-primary-600">IDRX</p>
-          <p className="text-gray-600">Stablecoin</p>
+        <div className="glass-card rounded-xl p-6 shadow-lg text-center transform hover:scale-105 transition-transform">
+          <p className="text-3xl font-bold gradient-text">IDRX</p>
+          <p className="text-gray-700 font-medium">Stablecoin</p>
         </div>
       </div>
 
       {/* Connection Warning */}
       {!isConnected && (
-        <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-8">
-          <p className="text-amber-800">
-            Connect your wallet to invest in projects.
+        <div className="glass border border-amber-300 rounded-xl p-4 mb-8">
+          <p className="text-amber-800 font-medium">
+            💡 Connect your wallet to invest in projects.
           </p>
         </div>
       )}
 
       {isConnected && !isCorrectNetwork && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-8">
-          <p className="text-red-800">
-            Please switch to Base Sepolia network to interact with projects.
+        <div className="glass border border-red-300 rounded-xl p-4 mb-8">
+          <p className="text-red-800 font-medium">
+            ⚠️ Please switch to Base Sepolia network to interact with projects.
           </p>
         </div>
       )}
 
       {/* Projects Grid */}
-      <h2 className="text-2xl font-bold text-gray-800 mb-6">Available Projects</h2>
+      <h2 className="text-3xl font-bold gradient-text mb-6">Available Projects</h2>
 
       {loading ? (
         <div className="flex justify-center items-center py-12">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
         </div>
       ) : error ? (
-        <div className="text-center py-12">
-          <p className="text-red-600 mb-4">{error}</p>
+        <div className="text-center py-12 glass-card rounded-xl">
+          <p className="text-red-600 mb-4 font-medium">{error}</p>
           <button
             onClick={fetchProjects}
-            className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700"
+            className="glass-button px-4 py-2 text-primary-700 font-semibold rounded-lg"
           >
             Retry
           </button>
         </div>
       ) : projects.length === 0 ? (
-        <div className="text-center py-12 bg-white rounded-xl shadow-md">
+        <div className="text-center py-12 glass-card rounded-xl shadow-lg">
           <span className="text-6xl mb-4 block">🌱</span>
-          <p className="text-gray-600">No projects available yet.</p>
-          <p className="text-sm text-gray-500 mt-2">
+          <p className="text-gray-700 font-semibold">No projects available yet.</p>
+          <p className="text-sm text-gray-600 mt-2">
             Check back soon for new investment opportunities!
           </p>
         </div>

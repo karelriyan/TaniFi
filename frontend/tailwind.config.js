@@ -26,6 +26,22 @@ module.exports = {
           earth: '#78350f',
         }
       },
+      backdropBlur: {
+        xs: '2px',
+      },
+      animation: {
+        'glass-shimmer': 'shimmer 2s linear infinite',
+      },
+      keyframes: {
+        shimmer: {
+          'from': {
+            'background-position': '0 0'
+          },
+          'to': {
+            'background-position': '-200% 0'
+          }
+        }
+      }
     },
   },
   plugins: [],

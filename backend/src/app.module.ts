@@ -12,6 +12,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { PrismaModule } from './prisma/prisma.module';
 import { UssdModule } from './ussd/ussd.module';
 import { BlockchainModule } from './blockchain/blockchain.module';
+import { FarmerModule } from './farmer/farmer.module';
 import { AdminController } from './admin/admin.controller';
 import { ProjectController } from './project/project.controller';
 import { HealthController } from './health/health.controller';
@@ -42,6 +43,7 @@ import { HealthController } from './health/health.controller';
     PrismaModule,
     UssdModule,
     BlockchainModule,
+    FarmerModule,
   ],
   controllers: [AdminController, ProjectController, HealthController],
   providers: [

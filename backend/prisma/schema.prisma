@@ -14,15 +14,28 @@ model User {
   phoneHash       String    @unique
   walletAddress   String?   @unique
   encryptedPin    String?   // Hashed PIN for USSD authentication
+  role            String    @default("FARMER") // FARMER, COOPERATIVE, INVESTOR
   kycStatus       String    @default("PENDING") // PENDING, VERIFIED, REJECTED
   reputationScore Int       @default(100)
   balance         Int       @default(0) // IDRX balance in smallest unit
+
+  // Farmer-specific fields
+  farmerName      String?
+  farmerNIK       String?   @unique
+  landSize        Float?    // in hectares
+  location        String?
+  registrationMethod String @default("WEB") // WEB, USSD
+
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
+  verifiedAt      DateTime?
+  verifiedBy      String?   // Wallet address of cooperative who verified
 
   projects        Project[]
 
   @@index([kycStatus])
+  @@index([role])
+  @@index([farmerNIK])
 }
 
 // ============ USSD Session Management ============

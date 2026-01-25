@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>MetaMask Connection Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        button {
+            background: #0066ff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+        }
+        button:hover {
+            background: #0052cc;
+        }
+        .status {
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 8px;
+            background: #f5f5f5;
+        }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .info { background: #d1ecf1; color: #0c5460; }
+    </style>
+</head>
+<body>
+    <h1>🦊 MetaMask Connection Test</h1>
+
+    <div id="status" class="status">
+        Click "Connect" to test MetaMask connection
+    </div>
+
+    <button onclick="testMetaMask()">Connect MetaMask</button>
+    <button onclick="checkInstallation()">Check Installation</button>
+    <button onclick="getAccounts()">Get Accounts</button>
+
+    <div id="details" style="margin-top: 20px;"></div>
+
+    <script>
+        function log(message, type = 'info') {
+            const statusDiv = document.getElementById('status');
+            statusDiv.className = `status ${type}`;
+            statusDiv.innerHTML = message;
+            console.log(message);
+        }
+
+        function showDetails(data) {
+            document.getElementById('details').innerHTML =
+                '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+        }
+
+        function checkInstallation() {
+            console.log('Checking MetaMask installation...');
+
+            const checks = {
+                'window.ethereum exists': typeof window.ethereum !== 'undefined',
+                'window.ethereum.isMetaMask': window.ethereum?.isMetaMask === true,
+                'ethereum.request available': typeof window.ethereum?.request === 'function',
+                'Provider details': {
+                    isMetaMask: window.ethereum?.isMetaMask,
+                    chainId: window.ethereum?.chainId,
+                    selectedAddress: window.ethereum?.selectedAddress,
+                }
+            };
+
+            console.log('Installation checks:', checks);
+            showDetails(checks);
+
+            if (checks['window.ethereum.isMetaMask']) {
+                log('✅ MetaMask is installed!', 'success');
+            } else {
+                log('❌ MetaMask is NOT installed', 'error');
+            }
+        }
+
+        async function getAccounts() {
+            console.log('Getting accounts...');
+
+            if (!window.ethereum) {
+                log('❌ window.ethereum not found', 'error');
+                return;
+            }
+
+            try {
+                const accounts = await window.ethereum.request({
+                    method: 'eth_accounts'
+                });
+
+                console.log('Current accounts:', accounts);
+                showDetails({ accounts });
+
+                if (accounts.length > 0) {
+                    log(`✅ Found ${accounts.length} account(s): ${accounts[0]}`, 'success');
+                } else {
+                    log('⚠️ No accounts connected yet. Click "Connect MetaMask" to authorize.', 'info');
+                }
+            } catch (error) {
+                console.error('Error getting accounts:', error);
+                log(`❌ Error: ${error.message}`, 'error');
+                showDetails({ error: error.message, code: error.code });
+            }
+        }
+
+        async function testMetaMask() {
+            console.log('Testing MetaMask connection...');
+            log('🔄 Connecting to MetaMask...', 'info');
+
+            if (!window.ethereum) {
+                log('❌ MetaMask is not installed. Please install MetaMask extension.', 'error');
+                return;
+            }
+
+            if (!window.ethereum.isMetaMask) {
+                log('❌ window.ethereum exists but isMetaMask is false', 'error');
+                return;
+            }
+
+            try {
+                console.log('Requesting accounts...');
+
+                const accounts = await window.ethereum.request({
+                    method: 'eth_requestAccounts'
+                });
+
+                console.log('✅ Connection successful!', accounts);
+
+                const chainId = await window.ethereum.request({
+                    method: 'eth_chainId'
+                });
+
+                const result = {
+                    success: true,
+                    accounts: accounts,
+                    connectedAddress: accounts[0],
+                    chainId: chainId,
+                    chainIdDecimal: parseInt(chainId, 16),
+                    isBaseSepolia: parseInt(chainId, 16) === 84532
+                };
+
+                showDetails(result);
+                log(`✅ Connected! Address: ${accounts[0]}<br>Chain: ${parseInt(chainId, 16)} (${parseInt(chainId, 16) === 84532 ? 'Base Sepolia ✓' : 'Wrong network'})`, 'success');
+
+            } catch (error) {
+                console.error('Connection error:', error);
+
+                let errorMessage = '❌ Connection failed: ';
+
+                if (error.code === 4001) {
+                    errorMessage += 'You rejected the connection request.';
+                } else if (error.code === -32002) {
+                    errorMessage += 'Connection request already pending. Please check MetaMask popup.';
+                } else if (error.code === -32603) {
+                    errorMessage += 'Internal error. Try unlocking MetaMask.';
+                } else {
+                    errorMessage += error.message;
+                }
+
+                log(errorMessage, 'error');
+                showDetails({
+                    error: error.message,
+                    code: error.code,
+                    fullError: error
+                });
+            }
+        }
+
+        // Auto-check on load
+        window.addEventListener('load', () => {
+            console.log('Page loaded, checking MetaMask...');
+            checkInstallation();
+        });
+    </script>
+</body>
+</html>

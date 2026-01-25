@@ -331,7 +331,9 @@ export class AdminController {
     const take = query.limit || 20;
     const skip = query.offset || 0;
 
-    const where = query.kycStatus ? { kycStatus: query.kycStatus } : {};
+    // Support both kycStatus and status query params
+    const status = query.kycStatus || query.status;
+    const where = status ? { kycStatus: status, role: 'FARMER' } : { role: 'FARMER' };
 
     const [farmers, total] = await Promise.all([
       this.prisma.user.findMany({
@@ -345,6 +347,14 @@ export class AdminController {
           walletAddress: true,
           kycStatus: true,
           reputationScore: true,
+          role: true,
+          farmerName: true,
+          farmerNIK: true,
+          landSize: true,
+          location: true,
+          registrationMethod: true,
+          verifiedAt: true,
+          verifiedBy: true,
           createdAt: true,
           _count: {
             select: { projects: true },
@@ -354,15 +364,15 @@ export class AdminController {
       this.prisma.user.count({ where }),
     ]);
 
+    // Return array directly for frontend compatibility
     return {
-      ok: true,
-      data: farmers,
+      farmers,
       pagination: { total, limit: take, offset: skip },
     };
   }
 
   @Put('farmers/:id/verify')
-  async verifyFarmer(@Param('id') id: string) {
+  async verifyFarmer(@Param('id') id: string, @Body() body: { cooperativeAddress?: string }) {
     const farmer = await this.prisma.user.findUnique({
       where: { id },
     });
@@ -371,29 +381,56 @@ export class AdminController {
       throw new HttpException('Farmer not found', HttpStatus.NOT_FOUND);
     }
 
-    if (!farmer.walletAddress) {
-      throw new HttpException(
-        'Farmer has no wallet address',
-        HttpStatus.BAD_REQUEST,
-      );
-    }
-
     try {
-      // Verify on blockchain
-      const txHash = await this.blockchain.verifyFarmer(farmer.walletAddress);
+      let txHash;
+
+      // Only verify on blockchain if farmer has wallet address
+      if (farmer.walletAddress) {
+        try {
+          txHash = await this.blockchain.verifyFarmer(farmer.walletAddress);
+        } catch (blockchainError) {
+          console.log('Blockchain verification failed, continuing with DB update:', blockchainError);
+        }
+      }
 
       // Update database
       await this.prisma.user.update({
         where: { id },
-        data: { kycStatus: 'VERIFIED' },
+        data: {
+          kycStatus: 'VERIFIED',
+          verifiedAt: new Date(),
+          verifiedBy: body.cooperativeAddress,
+        },
       });
 
       return { ok: true, txHash };
     } catch (error) {
-      // If blockchain fails, still update DB
+      throw new HttpException(
+        `Verification failed: ${error.message}`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  @Put('farmers/:id/reject')
+  async rejectFarmer(@Param('id') id: string, @Body() body: { cooperativeAddress?: string; reason?: string }) {
+    const farmer = await this.prisma.user.findUnique({
+      where: { id },
+    });
+
+    if (!farmer) {
+      throw new HttpException('Farmer not found', HttpStatus.NOT_FOUND);
+    }
+
+    try {
+      // Update database
       await this.prisma.user.update({
         where: { id },
-        data: { kycStatus: 'VERIFIED' },
+        data: {
+          kycStatus: 'REJECTED',
+          verifiedAt: new Date(),
+          verifiedBy: body.cooperativeAddress,
+        },
       });
 
       return {
