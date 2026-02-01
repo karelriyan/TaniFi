@@ -1,0 +1,58 @@
+% ============================================================================
+% DiLoCo Experiment Results - Overall Summary
+% ============================================================================
+%
+% HOW TO USE THIS FILE:
+% ---------------------
+% Option 1: Standalone Preview (Overleaf/pdflatex)
+%   - Upload this entire file to Overleaf and compile
+%   - Or run: pdflatex results_summary.tex
+%
+% Option 2: Include in Your Paper
+%   - Copy ONLY the content between "COPY START" and "COPY END" markers
+%   - Make sure your main document has: \usepackage{booktabs}
+%
+% ============================================================================
+
+% --- DO NOT COPY (for standalone preview only) ---
+\documentclass{article}
+\usepackage{booktabs}
+\usepackage[margin=1in]{geometry}
+
+\begin{document}
+% --- END DO NOT COPY ---
+
+% ============================================================================
+% COPY START - Paste this into your paper
+% ============================================================================
+
+\begin{table}[h]
+\centering
+\caption{DiLoCo Simulation Results - Overall Summary}
+\label{tab:results_summary}
+\begin{tabular}{ll}
+\toprule
+Metric & Value \\
+\midrule
+Total Configurations Tested & 15 \\
+Number of Farmers & 50, 100, 150 \\
+Local Training Steps & 100, 200, 300, 400, 500 \\
+Federated Rounds & 15 \\
+\midrule
+Average Bandwidth Savings (\%) & 98.87 \\
+Average Loss Reduction (\%) & 1.37 \\
+Best Loss Reduction (\%) & \textbf{2.35} (150 farmers, 200 steps) \\
+\midrule
+Best Final Loss & 2.2112 \\
+Worst Final Loss & 2.2901 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% ============================================================================
+% COPY END
+% ============================================================================
+
+% --- DO NOT COPY (for standalone preview only) ---
+\end{document}
+% --- END DO NOT COPY ---

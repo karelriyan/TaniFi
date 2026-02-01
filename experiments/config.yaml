@@ -1,0 +1,99 @@
+# TaniFi DiLoCo Experiment Configuration
+
+# Model Configuration
+model:
+  name: "SimpleCropDiseaseModel"  # Later: YOLOv11
+  num_classes: 10
+  lora_rank: 4  # LoRA adapter rank
+  
+# Dataset Configuration
+dataset:
+  name: "weedsgalore"  # Options: weedsgalore, global-wheat, plantvillage
+  path: "../data/raw/weedsgalore"
+  processed_path: "../data/processed/weedsgalore"
+  image_size: 64  # Later: 640 for YOLO
+  train_split: 0.8
+  val_split: 0.1
+  test_split: 0.1
+
+# Federated Learning Configuration
+federated:
+  num_farmers: 100  # Number of farmer nodes to simulate
+  local_steps: 50  # Local training steps before sync
+  num_rounds: 3    # Total federated rounds
+  
+  # Data distribution
+  non_iid: true     # Non-IID data distribution (realistic)
+  min_samples_per_farmer: 10
+  max_samples_per_farmer: 150
+  checkpoint_rounds: [5, 10]
+  
+  # Aggregation
+  aggregation_method: "fedavg"  # Options: fedavg, fedprox, scaffold
+
+# Training Hyperparameters
+training:
+  batch_size: 8     # Small for resource-constrained devices
+  learning_rate: 0.001
+  optimizer: "adam"
+  weight_decay: 0.0001
+  
+  # Scheduler
+  use_scheduler: true
+  scheduler_type: "cosine"
+  
+# Device Configuration
+device:
+  use_gpu: true     # Use GPU if available
+  gpu_id: 0
+  num_workers: 4    # Data loading workers
+
+# Simulation Settings
+simulation:
+  # Network conditions (for realistic simulation)
+  simulate_network_delay: false
+  avg_sync_delay_seconds: 10
+  
+  # Device constraints
+  simulate_memory_constraint: false
+  max_memory_mb: 2048  # 2GB RAM (typical low-end Android)
+  
+  # Connectivity patterns
+  simulate_intermittent_connectivity: false
+  connectivity_probability: 0.8  # 80% chance of successful sync
+
+# Blockchain Integration (Future)
+blockchain:
+  enabled: false
+  network: "base-sepolia"  # Base L2 testnet
+  contract_address: null
+  proof_of_learning: true
+
+# Logging and Monitoring
+logging:
+  level: "INFO"
+  tensorboard: true
+  wandb: false
+  save_checkpoints: true
+  checkpoint_frequency: 2  # Save every N rounds
+  
+# Output Paths
+output:
+  results_dir: "../experiments/results"
+  checkpoints_dir: "../models/checkpoints"
+  logs_dir: "../experiments/logs"
+  plots_dir: "../experiments/results/plots"
+
+# Experiment Tracking
+experiment:
+  name: "diloco_baseline"
+  tags: ["diloco", "federated-learning", "agriculture", "indonesia"]
+  description: "Baseline DiLoCo simulation for TaniFi research paper"
+  
+# Paper-Specific Metrics to Track
+metrics:
+  track_bandwidth_savings: true
+  track_convergence_rate: true
+  track_per_farmer_contribution: true
+  track_model_accuracy: true
+  compare_with_centralized: true  # Run centralized baseline for comparison

@@ -1,0 +1,69 @@
+# Core Deep Learning (Latest stable versions - Jan 2025)
+torch>=2.5.0
+torchvision>=0.20.0
+torchaudio>=2.5.0
+
+# Computer Vision & Object Detection
+ultralytics>=8.3.0  # YOLOv11 (latest)
+opencv-python>=4.10.0
+albumentations>=1.4.0
+Pillow>=10.4.0
+
+# Federated Learning & Optimization
+peft>=0.13.0  # LoRA adapters (latest)
+transformers>=4.46.0
+accelerate>=1.1.0
+bitsandbytes>=0.44.0  # For quantization
+
+# Data Processing
+numpy>=1.26.0,<2.0.0  # Pin to 1.x for compatibility
+pandas>=2.2.0
+scikit-learn>=1.5.0
+scipy>=1.14.0
+
+# Visualization & Monitoring
+matplotlib>=3.9.0
+seaborn>=0.13.0
+tensorboard>=2.18.0
+wandb>=0.18.0  # Optional: experiment tracking
+plotly>=5.24.0  # Interactive plots
+
+# Blockchain Integration (Base L2)
+web3>=7.4.0  # Latest web3.py
+py-solc-x>=2.0.3
+eth-account>=0.13.0
+eth-typing>=5.0.0
+
+# Utilities
+PyYAML>=6.0.2
+tqdm>=4.67.0
+python-dotenv>=1.0.1
+rich>=13.9.0  # Better terminal output
+click>=8.1.7  # CLI tool
+
+# Development Tools
+jupyter>=1.1.0
+ipykernel>=6.29.0
+jupyterlab>=4.3.0
+black>=24.10.0
+flake8>=7.1.0
+isort>=5.13.0
+
+# Testing
+pytest>=8.3.0
+pytest-cov>=6.0.0
+pytest-mock>=3.14.0
+
+# Dataset Management
+gdown>=5.2.0  # Google Drive downloads
+kaggle>=1.6.0  # Kaggle datasets
+huggingface-hub>=0.26.0  # HuggingFace datasets
+
+# DiLoCo Specific (Distributed Training)
+fairscale>=0.4.13  # Distributed training utilities
+deepspeed>=0.15.0  # Optional: advanced distributed training
+
+# Additional ML Tools
+einops>=0.8.0  # Tensor operations
+timm>=1.0.0  # Image models library
+torchmetrics>=1.5.0  # Metrics computation

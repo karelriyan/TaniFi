@@ -1,0 +1,20 @@
+{
+  "timestamp": "2026-02-01T18:38:07.816589",
+  "dataset_type": "weedsgalore",
+  "total_experiments": 1,
+  "successful": 0,
+  "failed": 1,
+  "total_duration_minutes": 61.00233734448751,
+  "results": [
+    {
+      "config": "config_100f_15r_300s.yaml",
+      "config_info": "100f/15r/300s",
+      "dataset": "weedsgalore",
+      "success": false,
+      "error": "Timeout after 3600s",
+      "duration": 3660.1402406692505,
+      "duration_minutes": 61.00233734448751,
+      "skipped": true
+    }
+  ]
+}

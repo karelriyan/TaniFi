@@ -1,0 +1,67 @@
+% ============================================================================
+% DiLoCo Experiment Results - Full Results Table
+% ============================================================================
+%
+% HOW TO USE THIS FILE:
+% ---------------------
+% Option 1: Standalone Preview (Overleaf/pdflatex)
+%   - Upload this entire file to Overleaf and compile
+%   - Or run: pdflatex full_results.tex
+%
+% Option 2: Include in Your Paper
+%   - Copy ONLY the content between "COPY START" and "COPY END" markers
+%   - Make sure your main document has: \usepackage{booktabs}
+%
+% ============================================================================
+
+% --- DO NOT COPY (for standalone preview only) ---
+\documentclass{article}
+\usepackage{booktabs}
+\usepackage[margin=1in]{geometry}
+
+\begin{document}
+% --- END DO NOT COPY ---
+
+% ============================================================================
+% COPY START - Paste this into your paper
+% ============================================================================
+
+\begin{table}[h]
+\centering
+\caption{DiLoCo Experiment Results (18 Configurations)}
+\label{tab:full_results}
+\begin{tabular}{rrrrrrl}
+\toprule
+Farmers & Steps & Rounds & Initial Loss & Final Loss & Loss Red. (\%) & BW Saved (\%) \\
+\midrule
+50 & 50 & 15 & 2.3072 & 2.3007 & 0.28 & 98.87 \\
+50 & 100 & 15 & 2.3072 & 2.2882 & 0.82 & 98.87 \\
+50 & 300 & 15 & 2.2990 & 2.2840 & 0.65 & 98.87 \\
+50 & 500 & 15 & 2.2977 & 2.2840 & 0.60 & 98.87 \\
+50 & 700 & 15 & 2.2920 & 2.2817 & 0.45 & 98.87 \\
+50 & 1000 & 15 & 2.2878 & 2.2790 & 0.38 & 98.87 \\
+\midrule
+100 & 50 & 15 & 2.3040 & 2.2826 & 0.93 & 98.87 \\
+100 & 100 & 15 & 2.3013 & 2.2688 & 1.42 & 98.87 \\
+100 & 300 & 15 & 2.2888 & 2.2621 & 1.16 & 98.87 \\
+100 & 500 & 15 & 2.2788 & 2.2496 & 1.28 & 98.87 \\
+100 & 700 & 15 & 2.2727 & 2.2509 & 0.96 & 98.87 \\
+100 & 1000 & 15 & 2.2770 & 2.2584 & 0.82 & 98.87 \\
+\midrule
+150 & 50 & 15 & 2.3036 & 2.2698 & 1.47 & 98.87 \\
+150 & 100 & 15 & 2.2983 & 2.2494 & 2.13 & 98.87 \\
+150 & 300 & 15 & 2.2843 & 2.2351 & \textbf{2.16} & 98.87 \\
+150 & 500 & 15 & 2.2593 & 2.2112 & 2.13 & 98.87 \\
+150 & 700 & 15 & 2.2672 & 2.2340 & 1.47 & 98.87 \\
+150 & 1000 & 15 & 2.2446 & 2.2125 & 1.43 & 98.87 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% ============================================================================
+% COPY END
+% ============================================================================
+
+% --- DO NOT COPY (for standalone preview only) ---
+\end{document}
+% --- END DO NOT COPY ---

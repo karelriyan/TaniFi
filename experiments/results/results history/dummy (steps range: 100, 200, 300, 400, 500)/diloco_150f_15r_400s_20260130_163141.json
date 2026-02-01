@@ -1,0 +1,168 @@
+{
+  "experiment_info": {
+    "experiment_id": "diloco_150f_400steps_20260130_163141",
+    "timestamp": "2026-01-30T16:31:41.553330",
+    "description": "DiLoCo federated learning simulation for TaniFi research",
+    "is_checkpoint": false,
+    "checkpoint_round": 15,
+    "total_rounds": 15
+  },
+  "configuration": {
+    "num_farmers": 150,
+    "local_steps": 400,
+    "num_rounds": 15,
+    "total_planned_rounds": 15,
+    "device": "cuda"
+  },
+  "execution_time_seconds": 2163.0561656951904,
+  "execution_time_minutes": 36.05093609491984,
+  "environment": {
+    "pytorch_version": "2.10.0+cu128",
+    "cuda_available": true,
+    "cuda_version": "12.8",
+    "device_name": "NVIDIA GeForce RTX 5050 Laptop GPU"
+  },
+  "results": {
+    "metrics": {
+      "rounds": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14
+      ],
+      "avg_loss": [
+        2.271906876101097,
+        2.226771157094836,
+        2.2277535736123717,
+        2.2251464047759772,
+        2.223179336600502,
+        2.2230775143255794,
+        2.221474860811233,
+        2.222008815134565,
+        2.2211569630891086,
+        2.22075576145649,
+        2.220364943863948,
+        2.220214633657535,
+        2.2200585672527557,
+        2.219631758677959,
+        2.2199423542718093
+      ],
+      "bandwidth_saved": [
+        98.86837519823011,
+        98.86837519823011,
+        98.86837519823011,
+        98.86837519823011,
+        98.86837519823011,
+        98.86837519823011,
+        98.86837519823011,
+        98.86837519823011,
+        98.86837519823011,
+        98.86837519823011,
+        98.86837519823011,
+        98.86837519823011,
+        98.86837519823011,
+        98.86837519823011,
+        98.86837519823011
+      ]
+    },
+    "summary": {
+      "initial_loss": 2.271906876101097,
+      "final_loss": 2.2199423542718093,
+      "loss_reduction_percent": 2.2872646047212073,
+      "avg_bandwidth_saved_percent": 98.86837519823011
+    }
+  },
+  "full_config": {
+    "blockchain": {
+      "contract_address": null,
+      "enabled": false,
+      "network": "base-sepolia",
+      "proof_of_learning": true
+    },
+    "dataset": {
+      "image_size": 64,
+      "name": "weedsgalore",
+      "path": "../data/raw/weedsgalore",
+      "processed_path": "../data/processed/weedsgalore",
+      "test_split": 0.1,
+      "train_split": 0.8,
+      "val_split": 0.1
+    },
+    "device": {
+      "gpu_id": 0,
+      "num_workers": 4,
+      "use_gpu": true
+    },
+    "experiment": {
+      "description": "Baseline DiLoCo simulation for TaniFi research paper",
+      "name": "diloco_baseline",
+      "tags": [
+        "diloco",
+        "federated-learning",
+        "agriculture",
+        "indonesia"
+      ]
+    },
+    "federated": {
+      "aggregation_method": "fedavg",
+      "local_steps": 400,
+      "max_samples_per_farmer": 150,
+      "min_samples_per_farmer": 10,
+      "non_iid": true,
+      "num_farmers": 150,
+      "num_rounds": 15
+    },
+    "logging": {
+      "checkpoint_frequency": 2,
+      "level": "INFO",
+      "save_checkpoints": true,
+      "tensorboard": true,
+      "wandb": false
+    },
+    "metrics": {
+      "compare_with_centralized": true,
+      "track_bandwidth_savings": true,
+      "track_convergence_rate": true,
+      "track_model_accuracy": true,
+      "track_per_farmer_contribution": true
+    },
+    "model": {
+      "lora_rank": 4,
+      "name": "SimpleCropDiseaseModel",
+      "num_classes": 10
+    },
+    "output": {
+      "checkpoints_dir": "../models/checkpoints",
+      "logs_dir": "../experiments/logs",
+      "plots_dir": "../experiments/results/plots",
+      "results_dir": "../experiments/results"
+    },
+    "simulation": {
+      "avg_sync_delay_seconds": 10,
+      "connectivity_probability": 0.8,
+      "max_memory_mb": 2048,
+      "simulate_intermittent_connectivity": false,
+      "simulate_memory_constraint": false,
+      "simulate_network_delay": false
+    },
+    "training": {
+      "batch_size": 8,
+      "learning_rate": 0.001,
+      "optimizer": "adam",
+      "scheduler_type": "cosine",
+      "use_scheduler": true,
+      "weight_decay": 0.0001
+    }
+  }
+}

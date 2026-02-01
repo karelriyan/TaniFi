@@ -1,0 +1,172 @@
+{
+  "experiment_info": {
+    "experiment_id": "diloco_50f_1000steps_20260129_184257",
+    "timestamp": "2026-01-29T18:42:57.429464",
+    "description": "DiLoCo federated learning simulation for TaniFi research",
+    "is_checkpoint": false,
+    "checkpoint_round": 15,
+    "total_rounds": 15
+  },
+  "configuration": {
+    "num_farmers": 50,
+    "local_steps": 1000,
+    "num_rounds": 15,
+    "total_planned_rounds": 15,
+    "device": "cuda"
+  },
+  "execution_time_seconds": 2288.1478753089905,
+  "execution_time_minutes": 38.13579792181651,
+  "environment": {
+    "pytorch_version": "2.10.0+cu128",
+    "cuda_available": true,
+    "cuda_version": "12.8",
+    "device_name": "NVIDIA GeForce RTX 5050 Laptop GPU"
+  },
+  "results": {
+    "metrics": {
+      "rounds": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14
+      ],
+      "avg_loss": [
+        2.287769727540016,
+        2.2789719624495506,
+        2.27931254570961,
+        2.2793949119329455,
+        2.2790671556782724,
+        2.278962755746841,
+        2.2788103149271013,
+        2.278587423493862,
+        2.278689212799072,
+        2.2789843955755233,
+        2.2791200490570067,
+        2.278679665315151,
+        2.278670128724575,
+        2.2790768144083025,
+        2.278965517027378
+      ],
+      "bandwidth_saved": [
+        98.86837519823011,
+        98.86837519823011,
+        98.86837519823011,
+        98.86837519823011,
+        98.86837519823011,
+        98.86837519823011,
+        98.86837519823011,
+        98.86837519823011,
+        98.86837519823011,
+        98.86837519823011,
+        98.86837519823011,
+        98.86837519823011,
+        98.86837519823011,
+        98.86837519823011,
+        98.86837519823011
+      ]
+    },
+    "summary": {
+      "initial_loss": 2.287769727540016,
+      "final_loss": 2.278965517027378,
+      "loss_reduction_percent": 0.3848381419971396,
+      "avg_bandwidth_saved_percent": 98.86837519823011
+    }
+  },
+  "full_config": {
+    "model": {
+      "name": "SimpleCropDiseaseModel",
+      "num_classes": 10,
+      "lora_rank": 4
+    },
+    "dataset": {
+      "name": "weedsgalore",
+      "path": "../data/raw/weedsgalore",
+      "processed_path": "../data/processed/weedsgalore",
+      "image_size": 64,
+      "train_split": 0.8,
+      "val_split": 0.1,
+      "test_split": 0.1
+    },
+    "federated": {
+      "num_farmers": 50,
+      "local_steps": 1000,
+      "num_rounds": 15,
+      "non_iid": true,
+      "min_samples_per_farmer": 10,
+      "max_samples_per_farmer": 150,
+      "checkpoint_rounds": [
+        5,
+        10
+      ],
+      "aggregation_method": "fedavg"
+    },
+    "training": {
+      "batch_size": 8,
+      "learning_rate": 0.001,
+      "optimizer": "adam",
+      "weight_decay": 0.0001,
+      "use_scheduler": true,
+      "scheduler_type": "cosine"
+    },
+    "device": {
+      "use_gpu": true,
+      "gpu_id": 0,
+      "num_workers": 4
+    },
+    "simulation": {
+      "simulate_network_delay": false,
+      "avg_sync_delay_seconds": 10,
+      "simulate_memory_constraint": false,
+      "max_memory_mb": 2048,
+      "simulate_intermittent_connectivity": false,
+      "connectivity_probability": 0.8
+    },
+    "blockchain": {
+      "enabled": false,
+      "network": "base-sepolia",
+      "contract_address": null,
+      "proof_of_learning": true
+    },
+    "logging": {
+      "level": "INFO",
+      "tensorboard": true,
+      "wandb": false,
+      "save_checkpoints": true,
+      "checkpoint_frequency": 2
+    },
+    "output": {
+      "results_dir": "../experiments/results",
+      "checkpoints_dir": "../models/checkpoints",
+      "logs_dir": "../experiments/logs",
+      "plots_dir": "../experiments/results/plots"
+    },
+    "experiment": {
+      "name": "diloco_baseline",
+      "tags": [
+        "diloco",
+        "federated-learning",
+        "agriculture",
+        "indonesia"
+      ],
+      "description": "Baseline DiLoCo simulation for TaniFi research paper"
+    },
+    "metrics": {
+      "track_bandwidth_savings": true,
+      "track_convergence_rate": true,
+      "track_per_farmer_contribution": true,
+      "track_model_accuracy": true,
+      "compare_with_centralized": true
+    }
+  }
+}

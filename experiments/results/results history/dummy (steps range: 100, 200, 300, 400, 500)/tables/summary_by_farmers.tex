@@ -1,0 +1,50 @@
+% ============================================================================
+% DiLoCo Experiment Results - Summary by Number of Farmers
+% ============================================================================
+%
+% HOW TO USE THIS FILE:
+% ---------------------
+% Option 1: Standalone Preview (Overleaf/pdflatex)
+%   - Upload this entire file to Overleaf and compile
+%   - Or run: pdflatex summary_by_farmers.tex
+%
+% Option 2: Include in Your Paper
+%   - Copy ONLY the content between "COPY START" and "COPY END" markers
+%   - Make sure your main document has: \usepackage{booktabs}
+%
+% ============================================================================
+
+% --- DO NOT COPY (for standalone preview only) ---
+\documentclass{article}
+\usepackage{booktabs}
+\usepackage[margin=1in]{geometry}
+
+\begin{document}
+% --- END DO NOT COPY ---
+
+% ============================================================================
+% COPY START - Paste this into your paper
+% ============================================================================
+
+\begin{table}[h]
+\centering
+\caption{Results Summary by Number of Farmers}
+\label{tab:summary_farmers}
+\begin{tabular}{rrrrrrl}
+\toprule
+Farmers & Loss (mean) & Loss (std) & Loss (min) & Red. (mean) & Red. (max) & BW Saved (\%) \\
+\midrule
+50 & 2.2870 & 0.0028 & 2.2840 & 0.62 & 0.82 & 98.87 \\
+100 & 2.2606 & 0.0077 & 2.2496 & 1.26 & 1.42 & 98.87 \\
+150 & 2.2310 & 0.0153 & 2.2112 & 2.21 & \textbf{2.35} & 98.87 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% ============================================================================
+% COPY END
+% ============================================================================
+
+% --- DO NOT COPY (for standalone preview only) ---
+\end{document}
+% --- END DO NOT COPY ---

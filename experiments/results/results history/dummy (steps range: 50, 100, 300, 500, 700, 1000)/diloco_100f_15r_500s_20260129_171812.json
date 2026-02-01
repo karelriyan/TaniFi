@@ -1,0 +1,168 @@
+{
+  "experiment_info": {
+    "experiment_id": "diloco_100f_500steps_20260129_171812",
+    "timestamp": "2026-01-29T17:18:12.535348",
+    "description": "DiLoCo federated learning simulation for TaniFi research"
+  },
+  "configuration": {
+    "num_farmers": 100,
+    "local_steps": 500,
+    "num_rounds": 15,
+    "device": "cuda"
+  },
+  "execution_time_seconds": 2620.0412273406982,
+  "execution_time_minutes": 43.667353789011635,
+  "environment": {
+    "pytorch_version": "2.10.0+cu128",
+    "cuda_available": true,
+    "cuda_version": "12.8",
+    "device_name": "NVIDIA GeForce RTX 5050 Laptop GPU"
+  },
+  "results": {
+    "metrics": {
+      "rounds": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14
+      ],
+      "avg_loss": [
+        2.2788326039028166,
+        2.251364864947796,
+        2.2537460473632813,
+        2.25210714956522,
+        2.250959217219352,
+        2.2504650151109695,
+        2.2508688808298105,
+        2.249750910964012,
+        2.249649393889904,
+        2.249549317188263,
+        2.2497090402317053,
+        2.249411225981712,
+        2.24950144515276,
+        2.249276428153515,
+        2.2495722438859937
+      ],
+      "bandwidth_saved": [
+        98.86837519823011,
+        98.86837519823011,
+        98.86837519823011,
+        98.86837519823011,
+        98.86837519823011,
+        98.86837519823011,
+        98.86837519823011,
+        98.86837519823011,
+        98.86837519823011,
+        98.86837519823011,
+        98.86837519823011,
+        98.86837519823011,
+        98.86837519823011,
+        98.86837519823011,
+        98.86837519823011
+      ]
+    },
+    "summary": {
+      "initial_loss": 2.2788326039028166,
+      "final_loss": 2.2495722438859937,
+      "loss_reduction_percent": 1.2840065552296576,
+      "avg_bandwidth_saved_percent": 98.86837519823011
+    }
+  },
+  "full_config": {
+    "model": {
+      "name": "SimpleCropDiseaseModel",
+      "num_classes": 10,
+      "lora_rank": 4
+    },
+    "dataset": {
+      "name": "weedsgalore",
+      "path": "../data/raw/weedsgalore",
+      "processed_path": "../data/processed/weedsgalore",
+      "image_size": 64,
+      "train_split": 0.8,
+      "val_split": 0.1,
+      "test_split": 0.1
+    },
+    "federated": {
+      "num_farmers": 100,
+      "local_steps": 500,
+      "num_rounds": 15,
+      "non_iid": true,
+      "min_samples_per_farmer": 10,
+      "max_samples_per_farmer": 150,
+      "checkpoint_rounds": [
+        5,
+        10
+      ],
+      "aggregation_method": "fedavg"
+    },
+    "training": {
+      "batch_size": 8,
+      "learning_rate": 0.001,
+      "optimizer": "adam",
+      "weight_decay": 0.0001,
+      "use_scheduler": true,
+      "scheduler_type": "cosine"
+    },
+    "device": {
+      "use_gpu": true,
+      "gpu_id": 0,
+      "num_workers": 4
+    },
+    "simulation": {
+      "simulate_network_delay": false,
+      "avg_sync_delay_seconds": 10,
+      "simulate_memory_constraint": false,
+      "max_memory_mb": 2048,
+      "simulate_intermittent_connectivity": false,
+      "connectivity_probability": 0.8
+    },
+    "blockchain": {
+      "enabled": false,
+      "network": "base-sepolia",
+      "contract_address": null,
+      "proof_of_learning": true
+    },
+    "logging": {
+      "level": "INFO",
+      "tensorboard": true,
+      "wandb": false,
+      "save_checkpoints": true,
+      "checkpoint_frequency": 2
+    },
+    "output": {
+      "results_dir": "../experiments/results",
+      "checkpoints_dir": "../models/checkpoints",
+      "logs_dir": "../experiments/logs",
+      "plots_dir": "../experiments/results/plots"
+    },
+    "experiment": {
+      "name": "diloco_baseline",
+      "tags": [
+        "diloco",
+        "federated-learning",
+        "agriculture",
+        "indonesia"
+      ],
+      "description": "Baseline DiLoCo simulation for TaniFi research paper"
+    },
+    "metrics": {
+      "track_bandwidth_savings": true,
+      "track_convergence_rate": true,
+      "track_per_farmer_contribution": true,
+      "track_model_accuracy": true,
+      "compare_with_centralized": true
+    }
+  }
+}

@@ -1,0 +1,52 @@
+% ============================================================================
+% DiLoCo Experiment Results - Summary by Local Steps
+% ============================================================================
+%
+% HOW TO USE THIS FILE:
+% ---------------------
+% Option 1: Standalone Preview (Overleaf/pdflatex)
+%   - Upload this entire file to Overleaf and compile
+%   - Or run: pdflatex summary_by_steps.tex
+%
+% Option 2: Include in Your Paper
+%   - Copy ONLY the content between "COPY START" and "COPY END" markers
+%   - Make sure your main document has: \usepackage{booktabs}
+%
+% ============================================================================
+
+% --- DO NOT COPY (for standalone preview only) ---
+\documentclass{article}
+\usepackage{booktabs}
+\usepackage[margin=1in]{geometry}
+
+\begin{document}
+% --- END DO NOT COPY ---
+
+% ============================================================================
+% COPY START - Paste this into your paper
+% ============================================================================
+
+\begin{table}[h]
+\centering
+\caption{Results Summary by Local Steps}
+\label{tab:summary_steps}
+\begin{tabular}{rrrrrrl}
+\toprule
+Steps & Loss (mean) & Loss (std) & Loss (min) & Red. (mean) & Red. (max) & BW Saved (\%) \\
+\midrule
+100 & 2.2688 & 0.0194 & 2.2494 & 1.46 & 2.13 & 98.87 \\
+200 & 2.2652 & 0.0253 & 2.2395 & 1.40 & \textbf{2.35} & 98.87 \\
+300 & 2.2604 & 0.0245 & 2.2351 & 1.32 & 2.16 & 98.87 \\
+400 & 2.2551 & 0.0345 & 2.2199 & 1.31 & 2.29 & 98.87 \\
+500 & 2.2483 & 0.0364 & 2.2112 & 1.34 & 2.13 & 98.87 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% ============================================================================
+% COPY END
+% ============================================================================
+
+% --- DO NOT COPY (for standalone preview only) ---
+\end{document}
+% --- END DO NOT COPY ---

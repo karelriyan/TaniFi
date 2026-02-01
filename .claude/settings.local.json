@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ls:*)",
+      "Bash(xargs:*)",
+      "Bash(sort:*)",
+      "Bash(python3:*)",
+      "Bash(pkill:*)"
+    ]
+  }
+}

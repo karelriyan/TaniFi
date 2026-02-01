@@ -1,0 +1,70 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+.venv
+
+# Jupyter Notebook
+.ipynb_checkpoints
+*.ipynb_checkpoints
+
+# PyTorch
+*.pth
+*.pt
+*.ckpt
+
+# Data files (large datasets)
+data/raw/**/*.jpg
+data/raw/**/*.png
+data/raw/**/*.jpeg
+data/raw/**/*.zip
+data/raw/**/*.tar.gz
+*.h5
+*.hdf5
+
+# Model checkpoints (track only final models)
+models/checkpoints/*.pth
+models/checkpoints/*.pt
+
+# Experiment outputs
+experiments/results/**/*.png
+experiments/results/**/*.jpg
+experiments/results/**/*.csv
+experiments/results/**/*.log
+
+# Environment variables
+.env
+.env.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+wandb/
+
+# Blockchain
+node_modules/
+.openzeppelin/
+cache/
+artifacts/
+
+# Keep directory structure
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+!models/checkpoints/.gitkeep
+!experiments/results/.gitkeep

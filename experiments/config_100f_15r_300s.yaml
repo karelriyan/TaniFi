@@ -1,0 +1,75 @@
+# Auto-generated config for TaniFi DiLoCo experiment
+# Generated: 2026-01-30T17:06:59.371400
+# Parameters: 100 farmers, 15 rounds, 300 local steps
+#
+# To run this experiment:
+#   python run_diloco.py --config config_100f_15r_300s.yaml
+
+blockchain:
+  contract_address: null
+  enabled: false
+  network: base-sepolia
+  proof_of_learning: true
+dataset:
+  image_size: 64
+  name: weedsgalore
+  path: ../data/raw/weedsgalore
+  processed_path: ../data/processed/weedsgalore
+  test_split: 0.1
+  train_split: 0.8
+  val_split: 0.1
+device:
+  gpu_id: 0
+  num_workers: 4
+  use_gpu: true
+experiment:
+  description: Baseline DiLoCo simulation for TaniFi research paper
+  name: diloco_baseline
+  tags:
+  - diloco
+  - federated-learning
+  - agriculture
+  - indonesia
+federated:
+  aggregation_method: fedavg
+  local_steps: 300
+  max_samples_per_farmer: 150
+  min_samples_per_farmer: 10
+  non_iid: true
+  num_farmers: 100
+  num_rounds: 15
+logging:
+  checkpoint_frequency: 2
+  level: INFO
+  save_checkpoints: true
+  tensorboard: true
+  wandb: false
+metrics:
+  compare_with_centralized: true
+  track_bandwidth_savings: true
+  track_convergence_rate: true
+  track_model_accuracy: true
+  track_per_farmer_contribution: true
+model:
+  lora_rank: 4
+  name: SimpleCropDiseaseModel
+  num_classes: 10
+output:
+  checkpoints_dir: ../models/checkpoints
+  logs_dir: ../experiments/logs
+  plots_dir: ../experiments/results/plots
+  results_dir: ../experiments/results
+simulation:
+  avg_sync_delay_seconds: 10
+  connectivity_probability: 0.8
+  max_memory_mb: 2048
+  simulate_intermittent_connectivity: false
+  simulate_memory_constraint: false
+  simulate_network_delay: false
+training:
+  batch_size: 8
+  learning_rate: 0.001
+  optimizer: adam
+  scheduler_type: cosine
+  use_scheduler: true
+  weight_decay: 0.0001
