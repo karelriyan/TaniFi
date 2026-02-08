@@ -5,7 +5,8 @@
       "Bash(xargs:*)",
       "Bash(sort:*)",
       "Bash(python3:*)",
-      "Bash(pkill:*)"
+      "Bash(pkill:*)",
+      "Bash(cat:*)"
     ]
   }
 }

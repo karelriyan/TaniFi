@@ -41,15 +41,15 @@ from datetime import datetime
 
 # Number of farmers (federated clients) to test
 # More farmers = more diverse data distribution, potentially better generalization
-FARMERS = [50, 100, 150]
+FARMERS = [100]
 
 # Number of federated communication rounds
 # Higher rounds = more synchronization, better convergence but more communication
-ROUNDS = 15
+ROUNDS = 10
 
 # Local training steps per round before synchronization
 # Higher steps = more local computation, less communication (DiLoCo advantage)
-STEPS = [50, 100, 300, 500, 700, 1000]
+STEPS = [300]
 
 # ============================================================================
 # END CONFIGURATION

@@ -1,0 +1,52 @@
+% ============================================================================
+% DiLoCo Experiment Results - Full Results Table
+% ============================================================================
+%
+% HOW TO USE THIS FILE:
+% ---------------------
+% Option 1: Standalone Preview (Overleaf/pdflatex)
+%   - Upload this entire file to Overleaf and compile
+%   - Or run: pdflatex full_results.tex
+%
+% Option 2: Include in Your Paper
+%   - Copy ONLY the content between "COPY START" and "COPY END" markers
+%   - Make sure your main document has: \usepackage{booktabs}
+%
+% ============================================================================
+
+% --- DO NOT COPY (for standalone preview only) ---
+\documentclass{article}
+\usepackage{booktabs}
+\usepackage[margin=1in]{geometry}
+
+\begin{document}
+% --- END DO NOT COPY ---
+
+% ============================================================================
+% COPY START - Paste this into your paper
+% ============================================================================
+
+\begin{table}[h]
+\centering
+\caption{DiLoCo Experiment Results (1 Configurations)}
+\label{tab:full_results}
+\begin{tabular}{rrrrrrl}
+\toprule
+Farmers & Steps & Rounds & Initial Loss & Final Loss & Loss Red. (\%) & BW Saved (\%) \\
+\midrule
+100 & 300 & 10 & 2.3062 & 2.3033 & \textbf{0.12} & 98.87 \\
+\midrule
+
+\midrule
+
+\bottomrule
+\end{tabular}
+\end{table}
+
+% ============================================================================
+% COPY END
+% ============================================================================
+
+% --- DO NOT COPY (for standalone preview only) ---
+\end{document}
+% --- END DO NOT COPY ---

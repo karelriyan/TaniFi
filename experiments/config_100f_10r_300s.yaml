@@ -1,9 +1,9 @@
 # Auto-generated config for TaniFi DiLoCo experiment
-# Generated: 2026-01-30T17:06:59.371400
-# Parameters: 100 farmers, 15 rounds, 300 local steps
+# Generated: 2026-02-02T08:46:35.524880
+# Parameters: 100 farmers, 10 rounds, 300 local steps
 #
 # To run this experiment:
-#   python run_diloco.py --config config_100f_15r_300s.yaml
+#   python run_diloco.py --config config_100f_10r_300s.yaml
 
 blockchain:
   contract_address: null
@@ -37,7 +37,7 @@ federated:
   min_samples_per_farmer: 10
   non_iid: true
   num_farmers: 100
-  num_rounds: 15
+  num_rounds: 10
 logging:
   checkpoint_frequency: 2
   level: INFO
