@@ -72,7 +72,7 @@ from threading import Lock
 SUPPORTED_DATASETS = ["dummy", "weedsgalore"]
 
 # Default dataset type - CHANGE THIS TO SWITCH DATASETS FOR ALL EXPERIMENTS
-DATASET_TYPE = "dummy"  # <-- CHANGE THIS: "dummy" or "weedsgalore"
+DATASET_TYPE = "weedsgalore"  # <-- CHANGE THIS: "dummy" or "weedsgalore"
 
 
 # =============================================================================
@@ -421,6 +421,50 @@ def save_execution_log(results, output_file='execution_log.json', dataset_type="
     return log_data
 
 
+def run_centralized_baseline(timeout_seconds=86400):
+    """Run centralized baseline training for comparison."""
+    safe_print(f"\n{'='*70}")
+    safe_print(f"▶ RUNNING CENTRALIZED BASELINE")
+    safe_print(f"{'='*70}")
+
+    simulation_dir = Path(__file__).parent.parent / 'src' / 'simulation'
+    cmd = ['python3', 'diloco_trainer.py', '--centralized', '--real-data']
+
+    start_time = time.time()
+    try:
+        process = subprocess.Popen(
+            cmd, cwd=str(simulation_dir),
+            stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+            text=True, bufsize=1
+        )
+        output_lines = []
+        while True:
+            if time.time() - start_time > timeout_seconds:
+                process.kill()
+                break
+            line = process.stdout.readline()
+            if line:
+                output_lines.append(line)
+                print(line, end='', flush=True)
+            elif process.poll() is not None:
+                break
+
+        duration = time.time() - start_time
+        success = process.returncode == 0
+        safe_print(f"\n{'='*70}")
+        if success:
+            safe_print(f"✅ CENTRALIZED BASELINE COMPLETED ({duration:.1f}s)")
+        else:
+            safe_print(f"❌ CENTRALIZED BASELINE FAILED")
+        safe_print(f"{'='*70}")
+        return {'config': 'centralized_baseline', 'success': success,
+                'duration': duration, 'duration_minutes': duration / 60}
+    except Exception as e:
+        safe_print(f"❌ Centralized baseline error: {e}")
+        return {'config': 'centralized_baseline', 'success': False,
+                'error': str(e), 'duration': time.time() - start_time}
+
+
 def print_summary(results):
     """Print execution summary."""
 
@@ -536,6 +580,12 @@ Dataset Configuration:
         help=f'Specify dataset type: {SUPPORTED_DATASETS}'
     )
 
+    parser.add_argument(
+        '--run-baseline',
+        action='store_true',
+        help='Run centralized baseline before federated experiments'
+    )
+
     args = parser.parse_args()
 
     # Determine dataset type
@@ -583,13 +633,18 @@ Dataset Configuration:
 
     signal.signal(signal.SIGINT, signal_handler)
 
-    # Run experiments
+    # Run centralized baseline first if requested
     start_time = time.time()
 
+    if args.run_baseline:
+        baseline_result = run_centralized_baseline(args.timeout)
+        results.append(baseline_result)
+
+    # Run federated experiments
     if args.sequential or args.workers == 1:
-        results = run_experiments_sequential(config_files, args.timeout, dataset_type)
+        results.extend(run_experiments_sequential(config_files, args.timeout, dataset_type))
     else:
-        results = run_experiments_parallel(config_files, args.workers, args.timeout, dataset_type)
+        results.extend(run_experiments_parallel(config_files, args.workers, args.timeout, dataset_type))
 
     total_time = time.time() - start_time
 

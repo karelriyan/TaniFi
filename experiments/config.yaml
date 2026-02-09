@@ -2,8 +2,8 @@
 
 # Model Configuration
 model:
-  name: "SimpleCropDiseaseModel"  # Later: YOLOv11
-  num_classes: 10
+  name: "YOLOv11ClassificationModel"
+  num_classes: 3   # WeedsGalore: 3 dominant non-background classes
   lora_rank: 4  # LoRA adapter rank
   
 # Dataset Configuration
@@ -11,16 +11,16 @@ dataset:
   name: "weedsgalore"  # Options: weedsgalore, global-wheat, plantvillage
   path: "../data/raw/weedsgalore"
   processed_path: "../data/processed/weedsgalore"
-  image_size: 64  # Later: 640 for YOLO
+  image_size: 224  # YOLOv11 classification standard
   train_split: 0.8
   val_split: 0.1
   test_split: 0.1
 
 # Federated Learning Configuration
 federated:
-  num_farmers: 100  # Number of farmer nodes to simulate
-  local_steps: 50  # Local training steps before sync
-  num_rounds: 3    # Total federated rounds
+  num_farmers: 5    # Number of farmer nodes to simulate
+  local_steps: 25   # Local training steps before sync
+  num_rounds: 5     # Total federated rounds
   
   # Data distribution
   non_iid: true     # Non-IID data distribution (realistic)
@@ -35,7 +35,7 @@ federated:
 training:
   batch_size: 8     # Small for resource-constrained devices
   learning_rate: 0.001
-  optimizer: "adam"
+  optimizer: "adamw"  # AdamW for stable convergence with large local steps
   weight_decay: 0.0001
   
   # Scheduler

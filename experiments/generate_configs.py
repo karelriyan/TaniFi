@@ -39,17 +39,27 @@ from datetime import datetime
 # CONFIGURATION - Modify experiment parameters here
 # ============================================================================
 
+# Experiment Design:
+# Two head-to-head scenarios with equal total training volume (10,000 steps)
+# Scenario 1 (Baseline/FedAvg): 10 farmers, 50 steps/round, 200 rounds
+# Scenario 2 (TaniFi/DiLoCo):   10 farmers, 500 steps/round, 20 rounds
+#
+# Both scenarios train for exactly 10,000 total steps per farmer, ensuring
+# a fair comparison of communication efficiency vs model quality.
+
 # Number of farmers (federated clients) to test
-# More farmers = more diverse data distribution, potentially better generalization
-FARMERS = [100]
+FARMERS = [10]
 
-# Number of federated communication rounds
-# Higher rounds = more synchronization, better convergence but more communication
-ROUNDS = 10
+# We generate configs for each (rounds, steps) pair separately
+# to support different round counts per scenario
+SCENARIOS = [
+    {'rounds': 200, 'steps': 50,  'label': 'baseline'},   # FedAvg-like frequent sync
+    {'rounds': 20,  'steps': 500, 'label': 'diloco'},      # DiLoCo low-communication
+]
 
-# Local training steps per round before synchronization
-# Higher steps = more local computation, less communication (DiLoCo advantage)
-STEPS = [300]
+# Legacy defaults (overridden by SCENARIOS)
+ROUNDS = 200
+STEPS = [50, 500]
 
 # ============================================================================
 # END CONFIGURATION
@@ -165,6 +175,11 @@ def generate_config_files(
         config['federated']['num_rounds'] = num_rounds
         config['federated']['local_steps'] = steps
 
+        # Ensure correct num_classes
+        if 'model' not in config:
+            config['model'] = {}
+        config['model']['num_classes'] = 3
+
         # Remove deprecated checkpoint_rounds if present
         config['federated'].pop('checkpoint_rounds', None)
 
@@ -258,7 +273,17 @@ def main():
     if len(sys.argv) > 1 and sys.argv[1] == '--custom':
         count = generate_custom_configs()
     else:
-        count = generate_config_files()
+        # Generate scenario-based configs
+        total_count = 0
+        for scenario in SCENARIOS:
+            for farmers in FARMERS:
+                count = generate_config_files(
+                    farmers_list=[farmers],
+                    num_rounds=scenario['rounds'],
+                    steps_list=[scenario['steps']],
+                )
+                total_count += count
+        count = total_count
 
     # Print next steps
     print("")

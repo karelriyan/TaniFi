@@ -1,9 +1,9 @@
 # Auto-generated config for TaniFi DiLoCo experiment
-# Generated: 2026-02-02T08:46:35.524880
-# Parameters: 100 farmers, 10 rounds, 300 local steps
+# Generated: 2026-02-09T11:33:44.905880
+# Parameters: 10 farmers, 200 rounds, 50 local steps
 #
 # To run this experiment:
-#   python run_diloco.py --config config_100f_10r_300s.yaml
+#   python run_diloco.py --config config_10f_200r_50s.yaml
 
 blockchain:
   contract_address: null
@@ -11,7 +11,7 @@ blockchain:
   network: base-sepolia
   proof_of_learning: true
 dataset:
-  image_size: 64
+  image_size: 224
   name: weedsgalore
   path: ../data/raw/weedsgalore
   processed_path: ../data/processed/weedsgalore
@@ -32,12 +32,12 @@ experiment:
   - indonesia
 federated:
   aggregation_method: fedavg
-  local_steps: 300
+  local_steps: 50
   max_samples_per_farmer: 150
   min_samples_per_farmer: 10
   non_iid: true
-  num_farmers: 100
-  num_rounds: 10
+  num_farmers: 10
+  num_rounds: 200
 logging:
   checkpoint_frequency: 2
   level: INFO
@@ -52,8 +52,8 @@ metrics:
   track_per_farmer_contribution: true
 model:
   lora_rank: 4
-  name: SimpleCropDiseaseModel
-  num_classes: 10
+  name: YOLOv11ClassificationModel
+  num_classes: 3
 output:
   checkpoints_dir: ../models/checkpoints
   logs_dir: ../experiments/logs
@@ -69,7 +69,7 @@ simulation:
 training:
   batch_size: 8
   learning_rate: 0.001
-  optimizer: adam
+  optimizer: adamw
   scheduler_type: cosine
   use_scheduler: true
   weight_decay: 0.0001

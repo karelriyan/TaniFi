@@ -1,0 +1,16 @@
+{
+  "timestamp": "2026-02-10T05:30:47.876986",
+  "dataset_type": "dummy",
+  "total_experiments": 1,
+  "successful": 1,
+  "failed": 0,
+  "total_duration_minutes": 0.2310854196548462,
+  "results": [
+    {
+      "config": "centralized_baseline",
+      "success": true,
+      "duration": 13.865125179290771,
+      "duration_minutes": 0.2310854196548462
+    }
+  ]
+}
