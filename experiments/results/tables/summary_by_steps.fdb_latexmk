@@ -1,0 +1,24 @@
+# Fdb version 4
+["pdflatex"] 1770743073.57391 "/home/karel/code/TaniFi/experiments/results/tables/summary_by_steps.tex" "summary_by_steps.pdf" "summary_by_steps" 1770743073.86327 0
+  "/etc/texmf/web2c/texmf.cnf" 1769757712.44627 475 c0e671620eb5563b2130f56340a5fde8 ""
+  "/home/karel/code/TaniFi/experiments/results/tables/summary_by_steps.tex" 1770743072.72093 609 32fea07d3e7f01ae287a780d767f5d53 ""
+  "/usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb" 1248133631 35752 024fb6c41858982481f6968b5fc26508 ""
+  "/usr/share/texlive/texmf-dist/tex/generic/iftex/iftex.sty" 1644112042 7237 bdd120a32c8fdb4b433cf9ca2e7cd98a ""
+  "/usr/share/texlive/texmf-dist/tex/generic/iftex/ifvtex.sty" 1572645307 1057 525c2192b5febbd8c1f662c9468335bb ""
+  "/usr/share/texlive/texmf-dist/tex/latex/base/article.cls" 1705352648 20144 147463a6a579f4597269ef9565205cfe ""
+  "/usr/share/texlive/texmf-dist/tex/latex/base/size10.clo" 1705352648 8448 dbc0dbf4156c0bb9ba01a1c685d3bad0 ""
+  "/usr/share/texlive/texmf-dist/tex/latex/booktabs/booktabs.sty" 1579038678 6078 f1cb470c9199e7110a27851508ed7a5c ""
+  "/usr/share/texlive/texmf-dist/tex/latex/geometry/geometry.sty" 1578002852 41601 9cf6c5257b1bc7af01a58859749dd37a ""
+  "/usr/share/texlive/texmf-dist/tex/latex/graphics/keyval.sty" 1654720880 2671 7e67d78d9b88c845599a85b2d41f2e39 ""
+  "/usr/share/texlive/texmf-dist/tex/latex/l3backend/l3backend-pdftex.def" 1704491087 30006 57b07afb710ee2f649c65cfbafda39c1 ""
+  "/usr/share/texlive/texmf-dist/web2c/texmf.cnf" 1707919699 40399 f2c302f7d2af602abb742093540a5834 ""
+  "/usr/share/texmf/web2c/texmf.cnf" 1707919699 40399 f2c302f7d2af602abb742093540a5834 ""
+  "/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map" 1770006601.24121 5472669 54eaf61a88b6b7896ebd0dac973cb29c ""
+  "/var/lib/texmf/web2c/pdftex/pdflatex.fmt" 1770006615 8215354 82c3af2bf3080df4b03df6454076e2ef ""
+  "summary_by_steps.aux" 1770743073.84657 207 e2e5068929f7e63c738e2999552b80eb "pdflatex"
+  "summary_by_steps.tex" 1770743072.72093 609 32fea07d3e7f01ae287a780d767f5d53 ""
+  (generated)
+  "summary_by_steps.aux"
+  "summary_by_steps.log"
+  "summary_by_steps.pdf"
+  (rewritten before read)

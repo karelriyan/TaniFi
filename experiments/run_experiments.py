@@ -428,7 +428,7 @@ def run_centralized_baseline(timeout_seconds=86400):
     safe_print(f"{'='*70}")
 
     simulation_dir = Path(__file__).parent.parent / 'src' / 'simulation'
-    cmd = ['python3', 'diloco_trainer.py', '--centralized', '--real-data']
+    cmd = ['python3', 'diloco_trainer.py', '--centralized', '--real-data', '--num-steps', '10000']
 
     start_time = time.time()
     try:

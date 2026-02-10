@@ -1,0 +1,256 @@
+{
+  "experiment_info": {
+    "experiment_id": "diloco_10f_500steps_20260210_221905",
+    "timestamp": "2026-02-10T22:19:05.385446",
+    "description": "DiLoCo federated learning simulation for TaniFi research",
+    "is_federated": true,
+    "checkpoint_round": 20,
+    "total_rounds": 20
+  },
+  "configuration": {
+    "num_farmers": 10,
+    "local_steps": 500,
+    "num_rounds": 20,
+    "total_planned_rounds": 20,
+    "device": "cuda"
+  },
+  "execution_time_seconds": 57102.60269141197,
+  "execution_time_minutes": 951.7100448568661,
+  "environment": {
+    "pytorch_version": "2.10.0+cu128",
+    "cuda_available": true,
+    "cuda_version": "12.8",
+    "device_name": "NVIDIA GeForce RTX 5050 Laptop GPU"
+  },
+  "results": {
+    "metrics": {
+      "rounds": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19
+      ],
+      "avg_loss": [
+        0.7916766008071436,
+        0.7544558265217349,
+        0.7522109147802004,
+        0.7507893439069857,
+        0.7510651404498373,
+        0.751209660458937,
+        0.7507579498739708,
+        0.7542800286411979,
+        0.7514108145609445,
+        0.7579353040274441,
+        0.7537113406935131,
+        0.7517941617424964,
+        0.7544227880394404,
+        0.7565634657501029,
+        0.7589984846682084,
+        0.7614949251743098,
+        0.7686447291146686,
+        0.7871743817999028,
+        0.8254861441962189,
+        0.9181669198557735
+      ],
+      "bandwidth_saved": [
+        99.24922489180408,
+        99.24922489180408,
+        99.24922489180408,
+        99.24922489180408,
+        99.24922489180408,
+        99.24922489180408,
+        99.24922489180408,
+        99.24922489180408,
+        99.24922489180408,
+        99.24922489180408,
+        99.24922489180408,
+        99.24922489180408,
+        99.24922489180408,
+        99.24922489180408,
+        99.24922489180408,
+        99.24922489180408,
+        99.24922489180408,
+        99.24922489180408,
+        99.24922489180408,
+        99.24922489180408
+      ],
+      "val_loss": [
+        0.7956362962722778,
+        0.664921224117279,
+        0.7132951021194458,
+        0.5367844104766846,
+        0.6650124788284302,
+        0.5145750045776367,
+        0.6947181224822998,
+        0.5043372511863708,
+        0.7574958801269531,
+        0.5056328177452087,
+        0.5461245179176331,
+        0.5279653072357178,
+        0.5340181589126587,
+        0.509597897529602,
+        0.5457929968833923,
+        0.5343745946884155,
+        0.5365062355995178,
+        0.5463727712631226,
+        0.5551347136497498,
+        0.5772130489349365
+      ],
+      "val_accuracy": [
+        0.8076923076923077,
+        0.8076923076923077,
+        0.8076923076923077,
+        0.8076923076923077,
+        0.8076923076923077,
+        0.8076923076923077,
+        0.8076923076923077,
+        0.8076923076923077,
+        0.8076923076923077,
+        0.8076923076923077,
+        0.8076923076923077,
+        0.8076923076923077,
+        0.8076923076923077,
+        0.8076923076923077,
+        0.8076923076923077,
+        0.8076923076923077,
+        0.8076923076923077,
+        0.8076923076923077,
+        0.8076923076923077,
+        0.8076923076923077
+      ],
+      "val_f1_macro": [
+        0.44680851063829785,
+        0.44680851063829785,
+        0.44680851063829785,
+        0.44680851063829785,
+        0.44680851063829785,
+        0.44680851063829785,
+        0.44680851063829785,
+        0.44680851063829785,
+        0.44680851063829785,
+        0.44680851063829785,
+        0.44680851063829785,
+        0.44680851063829785,
+        0.44680851063829785,
+        0.44680851063829785,
+        0.44680851063829785,
+        0.44680851063829785,
+        0.44680851063829785,
+        0.44680851063829785,
+        0.44680851063829785,
+        0.44680851063829785
+      ]
+    },
+    "summary": {
+      "initial_loss": 0.7916766008071436,
+      "final_loss": 0.9181669198557735,
+      "loss_reduction_percent": -15.977524019235666,
+      "avg_bandwidth_saved_percent": 99.24922489180406,
+      "final_val_accuracy": 0.8076923076923077,
+      "final_val_f1": 0.44680851063829785
+    },
+    "test_metrics": {
+      "loss": 1.1210881471633911,
+      "accuracy": 0.5384615384615384,
+      "f1_macro": 0.2333333333333333
+    }
+  },
+  "full_config": {
+    "blockchain": {
+      "contract_address": null,
+      "enabled": false,
+      "network": "base-sepolia",
+      "proof_of_learning": true
+    },
+    "dataset": {
+      "image_size": 224,
+      "name": "weedsgalore",
+      "path": "../data/raw/weedsgalore",
+      "processed_path": "../data/processed/weedsgalore",
+      "test_split": 0.1,
+      "train_split": 0.8,
+      "val_split": 0.1
+    },
+    "device": {
+      "gpu_id": 0,
+      "num_workers": 4,
+      "use_gpu": true
+    },
+    "experiment": {
+      "description": "Baseline DiLoCo simulation for TaniFi research paper",
+      "name": "diloco_baseline",
+      "tags": [
+        "diloco",
+        "federated-learning",
+        "agriculture",
+        "indonesia"
+      ]
+    },
+    "federated": {
+      "aggregation_method": "fedavg",
+      "local_steps": 500,
+      "max_samples_per_farmer": 150,
+      "min_samples_per_farmer": 10,
+      "non_iid": true,
+      "num_farmers": 10,
+      "num_rounds": 20
+    },
+    "logging": {
+      "checkpoint_frequency": 2,
+      "level": "INFO",
+      "save_checkpoints": true,
+      "tensorboard": true,
+      "wandb": false
+    },
+    "metrics": {
+      "compare_with_centralized": true,
+      "track_bandwidth_savings": true,
+      "track_convergence_rate": true,
+      "track_model_accuracy": true,
+      "track_per_farmer_contribution": true
+    },
+    "model": {
+      "lora_rank": 4,
+      "name": "YOLOv11ClassificationModel",
+      "num_classes": 3
+    },
+    "output": {
+      "checkpoints_dir": "../models/checkpoints",
+      "logs_dir": "../experiments/logs",
+      "plots_dir": "../experiments/results/plots",
+      "results_dir": "../experiments/results"
+    },
+    "simulation": {
+      "avg_sync_delay_seconds": 10,
+      "connectivity_probability": 0.8,
+      "max_memory_mb": 2048,
+      "simulate_intermittent_connectivity": false,
+      "simulate_memory_constraint": false,
+      "simulate_network_delay": false
+    },
+    "training": {
+      "batch_size": 8,
+      "learning_rate": 0.001,
+      "optimizer": "adamw",
+      "scheduler_type": "cosine",
+      "use_scheduler": true,
+      "weight_decay": 0.0001
+    }
+  }
+}

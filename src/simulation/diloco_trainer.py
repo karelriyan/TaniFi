@@ -657,24 +657,31 @@ class DiLoCoCoordinator:
 # =============================================================================
 
 def train_centralized_baseline(train_dataset, val_dataset, test_dataset,
-                                num_classes=3, num_epochs=10, device='cpu',
-                                config=None):
+                                num_classes=3, num_steps=10000, eval_every=200,
+                                device='cpu', config=None):
     """Train a centralized baseline (no federation) for comparison.
 
-    Trains YOLOv11ClassificationModel on ALL training data.
+    Trains YOLOv11ClassificationModel on ALL training data using step-based
+    training to match the total training volume of federated approaches.
     This serves as the upper-bound performance reference.
+
+    Args:
+        num_steps: Total gradient steps (default 10,000 to match federated).
+        eval_every: Evaluate on val set every N steps (default 200).
     """
     print(f"\n{'='*60}")
     print(f"Centralized Baseline Training")
     print(f"{'='*60}")
-    print(f"Classes: {num_classes}, Epochs: {num_epochs}, Device: {device}")
+    print(f"Classes: {num_classes}, Steps: {num_steps}, Eval every: {eval_every}, Device: {device}")
     print(f"Train: {len(train_dataset)}, Val: {len(val_dataset)}, Test: {len(test_dataset)}")
     print(f"{'='*60}\n")
 
     model = YOLOv11ClassificationModel(num_classes=num_classes).to(device)
-    optimizer = optim.AdamW(model.parameters(), lr=0.001, weight_decay=0.0001)
+    base_lr = 0.001
+    optimizer = optim.AdamW(model.parameters(), lr=base_lr, weight_decay=0.0001)
     class_weights = compute_class_weights(train_dataset)
     criterion = nn.CrossEntropyLoss(weight=class_weights.to(device))
+    eval_criterion = nn.CrossEntropyLoss()  # unweighted for eval
 
     train_loader = DataLoader(train_dataset, batch_size=16, shuffle=True, num_workers=4, pin_memory=True)
     val_loader = DataLoader(val_dataset, batch_size=64, shuffle=False, num_workers=4)
@@ -688,17 +695,35 @@ def train_centralized_baseline(train_dataset, val_dataset, test_dataset,
         torch.backends.cuda.matmul.allow_tf32 = True
         torch.backends.cudnn.allow_tf32 = True
 
+    # Warmup + cosine scheduler (matching federated setup)
+    warmup_steps = num_steps // 10
+
+    def get_lr(step):
+        if step < warmup_steps:
+            return base_lr * (step + 1) / warmup_steps
+        progress = (step - warmup_steps) / max(1, num_steps - warmup_steps)
+        return base_lr * 0.5 * (1.0 + np.cos(np.pi * progress))
+
     metrics = {
-        'epochs': [], 'train_loss': [],
+        'steps': [], 'train_loss': [],
         'val_loss': [], 'val_accuracy': [], 'val_f1_macro': []
     }
 
     start_time = time.time()
+    step = 0
+    recent_losses = []
 
-    for epoch in range(num_epochs):
-        model.train()
-        epoch_losses = []
+    while step < num_steps:
         for data, target in train_loader:
+            if step >= num_steps:
+                break
+
+            # Update LR
+            lr = get_lr(step)
+            for param_group in optimizer.param_groups:
+                param_group['lr'] = lr
+
+            model.train()
             data, target = data.to(device), target.to(device)
             optimizer.zero_grad(set_to_none=True)
             if use_amp:
@@ -713,38 +738,54 @@ def train_centralized_baseline(train_dataset, val_dataset, test_dataset,
                 loss = criterion(output, target)
                 loss.backward()
                 optimizer.step()
-            epoch_losses.append(loss.item())
+            recent_losses.append(loss.item())
+            step += 1
 
-        avg_train_loss = np.mean(epoch_losses)
-        val_results = evaluate_model(model, val_loader, criterion, device)
+            # Evaluate at intervals
+            if step % eval_every == 0 or step == num_steps:
+                avg_train_loss = np.mean(recent_losses)
+                recent_losses = []
+                val_results = evaluate_model(model, val_loader, eval_criterion, device)
 
-        metrics['epochs'].append(epoch)
-        metrics['train_loss'].append(float(avg_train_loss))
-        metrics['val_loss'].append(val_results['loss'])
-        metrics['val_accuracy'].append(val_results['accuracy'])
-        metrics['val_f1_macro'].append(val_results['f1_macro'])
+                metrics['steps'].append(step)
+                metrics['train_loss'].append(float(avg_train_loss))
+                metrics['val_loss'].append(val_results['loss'])
+                metrics['val_accuracy'].append(val_results['accuracy'])
+                metrics['val_f1_macro'].append(val_results['f1_macro'])
 
-        print(f"Epoch {epoch+1}/{num_epochs} - Train Loss: {avg_train_loss:.4f}, "
-              f"Val Acc: {val_results['accuracy']:.4f}, Val F1: {val_results['f1_macro']:.4f}")
+                elapsed = time.time() - start_time
+                eta = elapsed / step * (num_steps - step) if step > 0 else 0
+                print(f"Step {step:5d}/{num_steps} - Loss: {avg_train_loss:.4f}, "
+                      f"Val Acc: {val_results['accuracy']:.4f}, Val F1: {val_results['f1_macro']:.4f}, "
+                      f"LR: {lr:.6f}, ETA: {eta/60:.1f}min")
 
     execution_time = time.time() - start_time
 
     # Final test evaluation
-    test_results = evaluate_model(model, test_loader, criterion, device)
-    print(f"\nTest - Loss: {test_results['loss']:.4f}, Acc: {test_results['accuracy']:.4f}, F1: {test_results['f1_macro']:.4f}")
+    test_results = evaluate_model(model, test_loader, eval_criterion, device)
+    print(f"\n{'='*60}")
+    print(f"TEST RESULTS (Centralized, {num_steps} steps)")
+    print(f"{'='*60}")
+    print(f"   Test Loss: {test_results['loss']:.4f}")
+    print(f"   Test Accuracy: {test_results['accuracy']:.4f}")
+    print(f"   Test F1 (macro): {test_results['f1_macro']:.4f}")
+    print(f"{'='*60}")
 
     # Save results
+    num_evals = len(metrics['steps'])
     results = {
         "experiment_info": {
             "experiment_id": f"centralized_baseline_{datetime.now().strftime('%Y%m%d_%H%M%S')}",
             "timestamp": datetime.now().isoformat(),
-            "description": "Centralized baseline (no federation, no LoRA)",
+            "description": f"Centralized baseline ({num_steps} steps, no federation, no LoRA)",
             "is_federated": False,
         },
         "configuration": {
             "num_farmers": 0,
             "local_steps": 0,
-            "num_rounds": num_epochs,
+            "num_rounds": num_evals,
+            "total_steps": num_steps,
+            "eval_every": eval_every,
             "num_classes": num_classes,
             "device": str(device),
         },
@@ -865,7 +906,7 @@ def load_config(config_path='../../experiments/config.yaml'):
 # MAIN
 # =============================================================================
 
-def main(config_path='../../experiments/config.yaml', use_real_data=None, centralized=False):
+def main(config_path='../../experiments/config.yaml', use_real_data=None, centralized=False, num_steps_override=None):
     """Main simulation entry point."""
     RANDOM_SEED = 42
     torch.manual_seed(RANDOM_SEED)
@@ -913,9 +954,12 @@ def main(config_path='../../experiments/config.yaml', use_real_data=None, centra
         if val_dataset is None or test_dataset is None:
             print("ERROR: Centralized baseline requires --real-data flag")
             return
+        # Match federated training volume: local_steps * num_rounds
+        total_steps = num_steps_override if num_steps_override else LOCAL_STEPS * NUM_ROUNDS
         train_centralized_baseline(
             train_dataset, val_dataset, test_dataset,
-            num_classes=NUM_CLASSES, num_epochs=NUM_ROUNDS,
+            num_classes=NUM_CLASSES, num_steps=total_steps,
+            eval_every=max(1, total_steps // 50),
             device=DEVICE, config=config
         )
         return
@@ -945,6 +989,8 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='TaniFi DiLoCo Federated Learning Trainer')
     parser.add_argument('--config', type=str, default='../../experiments/config.yaml')
     parser.add_argument('--centralized', action='store_true', help='Run centralized baseline')
+    parser.add_argument('--num-steps', type=int, default=None,
+                        help='Total training steps for centralized baseline (default: local_steps * num_rounds from config)')
 
     data_group = parser.add_mutually_exclusive_group()
     data_group.add_argument('--real-data', action='store_true')
@@ -959,4 +1005,5 @@ if __name__ == '__main__':
     else:
         use_real_data = None
 
-    main(config_path=args.config, use_real_data=use_real_data, centralized=args.centralized)
+    main(config_path=args.config, use_real_data=use_real_data,
+         centralized=args.centralized, num_steps_override=args.num_steps)
