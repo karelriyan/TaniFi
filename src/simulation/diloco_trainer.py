@@ -221,6 +221,9 @@ class FarmerNode:
             adapter_type=adapter_type,
             config=adapter_config
         ).to(device)
+        # Log QLoRA activation status
+        if adapter_type == "qlora":
+            print("[INFO] QLoRA adapter selected. If bitsandbytes is available, model will be loaded in 4-bit mode.")
         self.total_rounds = total_rounds
         self.warmup_rounds = warmup_rounds
         self.current_round = 0
@@ -503,6 +506,12 @@ class DiLoCoCoordinator:
         self.global_metrics['rounds'].append(round_num)
         self.global_metrics['avg_loss'].append(avg_loss)
         self.global_metrics['bandwidth_saved'].append((1-bandwidth_ratio)*100)
+        # VRAM usage logging (in MB) after each round if CUDA is available
+        if torch.cuda.is_available():
+            vram_mb = torch.cuda.max_memory_allocated() / (1024 * 1024)
+            self.global_metrics.setdefault('vram_mb', []).append(vram_mb)
+            # Reset peak memory stats for next round
+            torch.cuda.reset_peak_memory_stats()
 
         # Evaluate on validation set (average metrics across all farmers)
         if self.val_loader is not None:
@@ -566,6 +575,18 @@ class DiLoCoCoordinator:
         print(f"Training completed in {total_time:.1f}s ({total_time/60:.1f}m)")
         print(f"Average round time: {np.mean(round_times):.1f}s")
         print(f"{'='*60}")
+
+        # Persist VRAM usage metrics to a JSON file if available
+        if 'vram_mb' in self.global_metrics:
+            try:
+                results_dir = Path(__file__).parent.parent / 'experiments' / 'results'
+                results_dir.mkdir(parents=True, exist_ok=True)
+                vram_path = results_dir / 'vram_usage.json'
+                with open(vram_path, 'w') as f:
+                    json.dump({'vram_mb': self.global_metrics['vram_mb']}, f, indent=2)
+                print(f"[INFO] VRAM usage saved to {vram_path}")
+            except Exception as e:
+                print(f"[WARN] Failed to save VRAM usage: {e}")
 
         return self.global_metrics
 

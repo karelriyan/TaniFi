@@ -1,0 +1,62 @@
+# QLoRA DiLoCo experiment configuration
+# Generated automatically
+
+blockchain:
+  enabled: false
+  network: base-sepolia
+  contract_address: null
+  proof_of_learning: true
+
+dataset:
+  name: weedsgalore
+  path: ../data/raw/weedsgalore
+  processed_path: ../data/processed/weedsgalore
+  image_size: 224
+  train_split: 0.8
+  val_split: 0.1
+  test_split: 0.1
+
+device:
+  use_gpu: true
+  gpu_id: 0
+  num_workers: 4
+
+federated:
+  num_farmers: 10
+  num_rounds: 20
+  local_steps: 500
+  non_iid: true
+  aggregation_method: fedavg
+  adapter_type: qlora
+  adapter_config:
+    r: 4
+    lora_alpha: 32
+    target_modules: ["classifier"]
+    lora_dropout: 0.05
+    quantized: true
+
+training:
+  batch_size: 8
+  learning_rate: 0.001
+  optimizer: adamw
+  weight_decay: 0.0001
+  use_scheduler: true
+  scheduler_type: cosine
+
+simulation:
+  avg_sync_delay_seconds: 10
+  connectivity_probability: 0.8
+  simulate_memory_constraint: false
+  max_memory_mb: 2048
+  simulate_network_delay: false
+
+output:
+  results_dir: ../experiments/results
+  checkpoints_dir: ../models/checkpoints
+  logs_dir: ../experiments/logs
+  plots_dir: ../experiments/results/plots
+
+experiment:
+  name: diloco_qlora
+  description: DiLoCo experiment using QLoRA adapters
+  tags: [diloco, qlora, federated]

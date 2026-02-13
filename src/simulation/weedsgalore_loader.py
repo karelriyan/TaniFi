@@ -192,21 +192,32 @@ class WeedsGaloreDataset(Dataset):
         return image, label
 
 
-def create_weedsgalore_loaders(batch_size=8, img_size=224):
-    """Create train/val/test dataloaders"""
+def create_weedsgalore_loaders(batch_size=8, img_size=224, oversample_minority=False):
+    """Create train/val/test dataloaders with optional oversampling for minority classes.
+
+    Args:
+        batch_size (int): Batch size for all loaders.
+        img_size (int): Target image size (square).
+        oversample_minority (bool): If True, applies weighted random sampling to the training
+            set to mitigate class imbalance.
+    """
     from torchvision import transforms
-    from torch.utils.data import DataLoader
+    from torch.utils.data import DataLoader, WeightedRandomSampler
+    import torch
+    import numpy as np
 
     project_root = Path(__file__).parent.parent.parent
     root = project_root / 'data/weedsgalore/weedsgalore-dataset'
 
-    # Training transforms with augmentation for small dataset
+    # Strong augmentations for training to improve robustness and handle class imbalance
     train_transform = transforms.Compose([
-        transforms.Resize((img_size, img_size)),
+        transforms.RandomResizedCrop((img_size, img_size), scale=(0.8, 1.0), ratio=(0.9, 1.1)),
         transforms.RandomHorizontalFlip(),
         transforms.RandomVerticalFlip(),
-        transforms.RandomRotation(15),
-        transforms.ColorJitter(brightness=0.2, contrast=0.2),
+        transforms.RandomRotation(30),
+        transforms.ColorJitter(brightness=0.3, contrast=0.3, saturation=0.3, hue=0.1),
+        transforms.RandomGrayscale(p=0.1),
+        transforms.RandomPerspective(distortion_scale=0.2, p=0.2),
         transforms.ToTensor(),
         transforms.Normalize(mean=[0.485, 0.456, 0.406],
                              std=[0.229, 0.224, 0.225])
@@ -224,8 +235,17 @@ def create_weedsgalore_loaders(batch_size=8, img_size=224):
     val_dataset = WeedsGaloreDataset(root, 'val', eval_transform)
     test_dataset = WeedsGaloreDataset(root, 'test', eval_transform)
 
-    train_loader = DataLoader(train_dataset, batch_size=batch_size,
-                              shuffle=True, num_workers=2)
+    if oversample_minority:
+        class_counts = np.bincount(train_dataset.labels, minlength=NUM_CLASSES)
+        class_weights = 1.0 / (class_counts + 1e-6)
+        sample_weights = [class_weights[label] for label in train_dataset.labels]
+        sampler = WeightedRandomSampler(sample_weights, num_samples=len(sample_weights), replacement=True)
+        train_loader = DataLoader(train_dataset, batch_size=batch_size,
+                                  sampler=sampler, num_workers=2)
+    else:
+        train_loader = DataLoader(train_dataset, batch_size=batch_size,
+                                  shuffle=True, num_workers=2)
+
     val_loader = DataLoader(val_dataset, batch_size=batch_size,
                             shuffle=False, num_workers=2)
     test_loader = DataLoader(test_dataset, batch_size=batch_size,
