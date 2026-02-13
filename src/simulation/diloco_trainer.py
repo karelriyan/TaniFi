@@ -7,19 +7,60 @@ for bandwidth-constrained agricultural networks.
 Key Features:
 - Local training with configurable steps before synchronization
 - LoRA adapters for efficient parameter updates
-- Evaluation metrics: loss, accuracy, macro-F1
-- Centralized baseline for comparison
-- Simulates farmer nodes with varying connectivity
+- QLoRA adapters (4‑bit quantization) via `--adapter-type qlora`
+- Evaluation metrics: loss, accuracy, macro‑F1
+- Centralized baseline for performance comparison
+- Simulates farmer nodes with varying connectivity and bandwidth constraints
 
-Paper: "Simulation of Bandwidth-Efficient Federated Learning Architectures
-        for Resource-Constrained Agricultural Networks in Indonesia"
+Paper: "Simulation of Bandwidth‑Efficient Federated Learning Architectures for
+Resource‑Constrained Agricultural Networks in Indonesia"
 
 Usage:
-    # Federated training with real data
-    python diloco_trainer.py --real-data --config ../../experiments/config.yaml
+    # 1. Activate the virtual environment
+    # Linux/macOS
+    source venv/bin/activate
+    # Windows
+    venv\\Scripts\\activate
 
-    # Centralized baseline
-    python diloco_trainer.py --real-data --centralized --config ../../experiments/config.yaml
+    # 2. Run federated training with real data (default LoRA)
+    python src/simulation/diloco_trainer.py \\
+        --real-data \\
+        --config experiments/config_10f_20r_500s.yaml
+
+    # 3. Run federated training with QLoRA adapter
+    python src/simulation/diloco_trainer.py \\
+        --real-data \\
+        --adapter-type qlora \\
+        --config experiments/config_10f_20r_500s.yaml
+
+    # 4. Run centralized baseline (no federation)
+    python src/simulation/diloco_trainer.py \\
+        --real-data \\
+        --centralized \\
+        --config experiments/config.yaml
+
+    # 5. Override specific hyper‑parameters from the command line
+    python src/simulation/diloco_trainer.py \\
+        --real-data \\
+        --num-farmers 5 \\
+        --total-rounds 30 \\
+        --local-steps 200
+
+    # 6. Provide a JSON file with custom adapter configuration
+    python src/simulation/diloco_trainer.py \\
+        --real-data \\
+        --adapter-config adapter_cfg.json
+
+Arguments:
+    --real-data               Use the real WeedsGalore dataset; omit for synthetic data.
+    --centralized             Run a centralized baseline instead of federated learning.
+    --config PATH             Path to a YAML configuration file (default: None).
+    --adapter-type TYPE       Choose adapter: 'lora' (default) or 'qlora'.
+    --adapter-config PATH     JSON file with adapter hyper‑parameters (e.g., rank, r, lora_alpha).
+    --num-farmers N           Override number of farmer nodes.
+    --local-steps N           Override number of local training steps per round.
+    --total-rounds N          Override total number of federated rounds.
+    --no-plots                Disable saving training plots.
 """
 
 import torch
@@ -36,6 +77,15 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from sklearn.metrics import f1_score, accuracy_score
+import sys, os
+# Ensure the repository root is in sys.path so absolute imports work when the script
+# is executed directly (e.g., `python src/simulation/diloco_trainer.py`).
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+if project_root not in sys.path:
+    sys.path.append(project_root)
+
+from src.simulation.adapters import AdapterFactory, LoRAAdapter
+import yaml
 
 
 # =============================================================================
@@ -84,45 +134,7 @@ class YOLOv11ClassificationModel(nn.Module):
         return x
 
 
-class LoRAAdapter(nn.Module):
-    """
-    LoRA (Low-Rank Adaptation) adapter for efficient fine-tuning.
-    Represents the "Shard" that each farmer owns and trains locally.
-    Only these small adapters are transmitted, not the full model.
-    """
-    def __init__(self, base_model, rank=4):
-        super().__init__()
-        self.base_model = base_model
-        self.rank = rank
-
-        for param in self.base_model.parameters():
-            param.requires_grad = False
-
-        # Auto-detect feature dimension from base model
-        feature_dim = getattr(base_model, 'feature_dim', 128)
-
-        self.adapter = nn.Sequential(
-            nn.Linear(feature_dim, rank),
-            nn.ReLU(),
-            nn.Linear(rank, feature_dim)
-        )
-
-    def forward(self, x):
-        features = self.base_model.features(x)
-        adapted_features = features + self.adapter(features.flatten(1)).view_as(features)
-        output = self.base_model.classifier(adapted_features)
-        return output
-
-    def get_adapter_params(self):
-        """Get only the adapter parameters (the 'shard')."""
-        return {name: param.clone().detach()
-                for name, param in self.adapter.named_parameters()}
-
-    def set_adapter_params(self, params):
-        """Set adapter parameters from received 'shard'."""
-        with torch.no_grad():
-            for name, param in self.adapter.named_parameters():
-                param.copy_(params[name])
+# Adapter imports are handled earlier in the file (absolute import with sys.path adjustment)
 
 
 # =============================================================================
@@ -200,10 +212,15 @@ FAST_MODE = True
 class FarmerNode:
     """Simulates a single farmer/agent node with local training."""
     def __init__(self, node_id, base_model, data_subset, device='cpu',
-                 total_rounds=20, warmup_rounds=5, class_weights=None):
+                 total_rounds=20, warmup_rounds=5, class_weights=None,
+                 adapter_type="lora", adapter_config=None):
         self.node_id = node_id
         self.device = device
-        self.model = LoRAAdapter(base_model, rank=4).to(device)
+        self.model = AdapterFactory.create_adapter(
+            base_model,
+            adapter_type=adapter_type,
+            config=adapter_config
+        ).to(device)
         self.total_rounds = total_rounds
         self.warmup_rounds = warmup_rounds
         self.current_round = 0
@@ -225,14 +242,20 @@ class FarmerNode:
             pin_memory=pin_memory
         )
         self.base_lr = 0.001
-        self.optimizer = optim.AdamW(self.model.adapter.parameters(), lr=self.base_lr, weight_decay=0.0001)
+        # Determine trainable parameters based on adapter type
+        if hasattr(self.model, "adapter"):
+            trainable_params = self.model.adapter.parameters()
+        else:
+            # QLoRA model returned by PEFT wraps the base model; its trainable params are accessible via .parameters()
+            trainable_params = self.model.parameters()
+        self.optimizer = optim.AdamW(trainable_params, lr=self.base_lr, weight_decay=0.0001)
         if class_weights is not None:
             self.criterion = nn.CrossEntropyLoss(weight=class_weights.to(device))
         else:
             self.criterion = nn.CrossEntropyLoss()
         self.use_amp = FAST_MODE and device == 'cuda'
         if self.use_amp:
-            self.scaler = torch.amp.GradScaler('cuda')
+            self.scaler = torch.cuda.amp.GradScaler()
         self.local_losses = []
         self.sync_count = 0
 
@@ -300,7 +323,9 @@ class FarmerNode:
 class DiLoCoCoordinator:
     """DiLoCo Coordinator - manages federated learning simulation."""
 
-    def __init__(self, base_model, num_farmers=10, local_steps=100, device='cpu'):
+    def __init__(self, base_model, num_farmers=10, local_steps=100, device='cpu',
+                 adapter_type="lora", adapter_config=None,
+                 outer_lr: float = 1.0, mu: float = 0.9):
         if num_farmers < 1:
             raise ValueError(f"num_farmers must be >= 1, got {num_farmers}")
         if local_steps < 1:
@@ -311,9 +336,16 @@ class DiLoCoCoordinator:
         self.device = device
         self.farmer_nodes = []
         self.global_model = base_model.to(device)
+        self.adapter_type = adapter_type
+        self.adapter_config = adapter_config or {}
         self.val_loader = None
         self.test_loader = None
         self.test_metrics = None
+        # DiLoCo outer optimizer (Nesterov momentum)
+        self.outer_lr = outer_lr
+        self.mu = mu
+        self.momentum_buffer: dict[str, torch.Tensor] = {}
+        self.prev_params: dict[str, torch.Tensor] = {}
 
         self.global_metrics = {
             'rounds': [],
@@ -389,18 +421,26 @@ class DiLoCoCoordinator:
                 farmer = FarmerNode(node_id=i, base_model=self.base_model, data_subset=subset,
                                     device=self.device, total_rounds=self._total_rounds,
                                     warmup_rounds=self._warmup_rounds,
-                                    class_weights=self._class_weights)
+                                    class_weights=self._class_weights,
+                                    adapter_type=self.adapter_type,
+                                    adapter_config=self.adapter_config)
                 self.farmer_nodes.append(farmer)
                 start_idx = end_idx
 
         print(f"   Farmers initialized with {min(sizes)}-{max(sizes)} samples each")
 
     def aggregate_shards(self, shards):
-        """Aggregate shards from multiple farmers (FedAvg)."""
+        """Aggregate shards from multiple farmers using weighted averaging based on each farmer's data size."""
         aggregated = {}
+        # Total number of samples across all farmers
+        total_samples = sum(len(farmer.data_subset) for farmer in self.farmer_nodes)
         for param_name in shards[0].keys():
-            stacked = torch.stack([shard[param_name] for shard in shards])
-            aggregated[param_name] = stacked.mean(dim=0)
+            # Weighted sum of parameters
+            weighted_sum = sum(
+                shards[i][param_name] * len(self.farmer_nodes[i].data_subset)
+                for i in range(len(shards))
+            )
+            aggregated[param_name] = weighted_sum / total_samples
         return aggregated
 
     def federated_round(self, round_num):
@@ -431,9 +471,33 @@ class DiLoCoCoordinator:
 
         print(f"   Bandwidth savings: {(1-bandwidth_ratio)*100:.1f}% ({shard_size} vs {full_model_size} params)")
 
+        # Aggregate shards from farmers (FedAvg)
         aggregated_params = self.aggregate_shards(shards)
+        # Initialize momentum buffers if first round
+        if not self.momentum_buffer:
+            for name, param in aggregated_params.items():
+                self.momentum_buffer[name] = torch.zeros_like(param)
+        # Store previous global parameters before update (first round)
+        if not self.prev_params:
+            self.prev_params = {name: param.clone().detach()
+                                for name, param in self.global_model.state_dict().items()
+                                if name in aggregated_params}
+        # Nesterov momentum update on adapter parameters
+        updated_params = {}
+        for name, agg_param in aggregated_params.items():
+            current_param = self.global_model.state_dict()[name]
+            grad = current_param - agg_param
+            v = self.momentum_buffer[name]
+            v = self.mu * v + grad
+            self.momentum_buffer[name] = v
+            update = self.outer_lr * (grad + self.mu * v)
+            new_param = current_param - update
+            updated_params[name] = new_param.clone().detach()
+            # Apply update to global model
+            self.global_model.state_dict()[name].copy_(new_param)
+        # Broadcast updated adapter parameters to all farmers
         for farmer in self.farmer_nodes:
-            farmer.update_shard(aggregated_params)
+            farmer.update_shard(updated_params)
 
         # Track metrics
         self.global_metrics['rounds'].append(round_num)
@@ -840,7 +904,9 @@ def main_training(config_file=None, centralized=False, real_data=True, save_plot
             base_model,
             num_farmers=config['num_farmers'],
             local_steps=config['local_steps'],
-            device=device
+            device=device,
+            adapter_type=config.get('adapter_type', 'lora'),
+            adapter_config=config.get('adapter_config', {})
         )
 
         coordinator.initialize_farmers(
@@ -938,6 +1004,10 @@ if __name__ == '__main__':
                         help='Override local steps per round in config')
     parser.add_argument('--total-rounds', type=int, default=None,
                         help='Override total rounds in config')
+    parser.add_argument('--adapter-type', type=str, choices=['lora', 'qlora'], default='lora',
+                        help='Adapter type to use (lora or qlora)')
+    parser.add_argument('--adapter-config', type=str, default=None,
+                        help='Path to JSON file with adapter configuration')
 
     args = parser.parse_args()
 
@@ -961,6 +1031,19 @@ if __name__ == '__main__':
         if config is None:
             config = {}
         config['total_rounds'] = args.total_rounds
+
+    # Adapter selection handling
+    if config is None:
+        config = {}
+    config['adapter_type'] = args.adapter_type
+    if args.adapter_config is not None:
+        import json, pathlib
+        cfg_path = pathlib.Path(args.adapter_config)
+        if cfg_path.is_file():
+            with open(cfg_path, 'r') as f:
+                config['adapter_config'] = json.load(f)
+        else:
+            print(f"⚠️  Adapter config file not found: {cfg_path}, using defaults")
 
     success = main_training(
         config_file=args.config,

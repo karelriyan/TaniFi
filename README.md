@@ -1,179 +1,217 @@
 # TaniFi: Federated Learning for Resource-Constrained Agricultural Networks
 
-## Digital Farming Revolution on the Edge
+[![Python 3.8+](https://img.shields.io/badge/python-3.8%2B-blue.svg)](https://www.python.org/downloads/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-TaniFi is a research project simulating federated learning architectures for bandwidth-constrained agricultural networks, specifically designed for Indonesian agricultural 4.0 environments. Built for the research paper on decentralized AI for smart farming.
+## 🌱 Digital Farming Revolution on the Edge
 
-## ⚡ Quick Start
+TaniFi is a research project simulating federated learning architectures for bandwidth-constrained agricultural networks, specifically designed for Indonesian agricultural 4.0 environments. This project implements the DiLoCo (Distributed Low-Communication) protocol to enable efficient AI model training across distributed farm nodes with limited connectivity.
 
-```bash
-# 1. Verify environment setup (checks dependencies, dataset, model)
-python3 verify_setup.py
+## 📚 Table of Contents
+- [Key Features](#-key-features)
+- [Installation & Setup](#-installation--setup)
+- [Dataset Configuration](#%EF%B8%8F-dataset-setup)
+- [Running Experiments](#-running-experiments)
+- [Project Architecture](#-project-architecture)
+- [Results & Evaluation](#-results--evaluation)
+- [Contributing](#-contributing)
+- [License](#-license)
 
-# 2. Check data structure
-ls -la data/weedsgalore/  # Should contain weedsgalore-dataset folder
+## ✅ Key Features
 
-# 3. Run experiments
-python3 src/simulation/diloco_trainer.py --config experiments/config.yaml --real-data
+- **Bandwidth-Efficient Communication**
+  - LoRA adapter shards for efficient parameter updates
+  - 98%+ bandwidth reduction compared to full model transfer
 
-# 4. Run centralized baseline for comparison
-python3 src/simulation/diloco_trainer.py --config experiments/config.yaml --real-data --centralized
-```
+- **Real Agricultural Dataset**
+  - Supports WeedsGalore dataset with automatic label derivation
+  - Synthetic data option for quick testing
 
-## 📊 Research Context
+- **Flexible Experimentation**
+  - Configurable farmers, rounds, and local steps
+  - Centralized baseline for performance comparison
+  - Comprehensive metrics: Accuracy, F1-Macro, bandwidth savings
 
-This project evaluates DiLoCo (Distributed Low-Communication) protocol in the context of:
-- **Limited bandwidth**: Farm areas with unstable 3G/4G connectivity
-- **Edge resources**: Devices with modest computational power
-- **Privacy preserving**: Data remains on farmer devices
-- **Data heterogeneity**: 100+ distributed farm nodes
+- **Reproducible Research**
+  - Automated experiment runner
+  - Jupyter analysis templates
+  - LaTeX paper templates
 
-### Key Features
-- ✅ LoRA adapter shards for efficient communication
-- ✅ Non-IID data distribution across farmers
-- ✅ Real agricultural dataset (WeedsGalore) OR synthetic data for testing
-- ✅ Centralized baseline comparison
-- ✅ Comprehensive metrics: Accuracy, F1-Macro, bandwidth savings
-- ✅ Local training with configurable rounds and steps
+## 🆕 New Features
 
-## 📁 Project Architecture
+- **QLoRA Adapter Integration**
+  - Added `QLoRAAdapter` wrapper for PEFT‑generated quantized models.
+  - Automatic 4‑bit quantization of linear layers using `bitsandbytes`.
+  - Unified adapter interface (`get_adapter_params`, `set_adapter_params`).
+  - CLI flag `--adapter-type` to select between `lora` and `qlora`.
+  - Optional JSON config via `--adapter-config` for custom adapter settings.
 
-```
-TaniFi/
-├── src/simulation/
-│   ├── diloco_trainer.py          # Main federated learning coordinator
-│   └── weedsgalore_loader.py      # Dataset loader (real labels from masks)
-│
-├── data/
-│   ├── README.md                  # This file - data structure guide
-│   └── weedsgalore/               # WeedsGalore dataset
-│       └── weedsgalore-dataset/
-│           ├── 2023-05-25/        # Date-based folder structure
-│           ├── 2023-05-30/
-│           ├── splits/            # train.txt / val.txt / test.txt
-│           └── ... (more date folders)
-│
-├── models/
-│   └── checkpoints/               # Trained model weights
-│
-├── experiments/
-│   ├── config.yaml                # Default experiment configuration
-│   ├── config_10f_20r_500s.yaml   # 10 farmers, 20 rounds, 500 steps
-│   ├── config_10f_200r_50s.yaml   # 10 farmers, 200 rounds, 50 steps
-│   ├── run_experiments.py         # Automated experiment runner
-│   ├── generate_configs.py        # Config generator for parameter sweeps
-│   └── results/                   # JSON metrics and plots
-│       ├── plots/                 # PNG graphs
-│       └── tables/                # CSV results
-│
-├── notebooks/
-│   └── analysis_template.ipynb    # Jupyter analysis notebook
-│
-├── yolo11n-cls.pt                 # YOLOv11 model (required)
-├── verify_setup.py                # Environment verification script
-├── requirements.txt               # Python dependencies
-├── LICENSE
-└── README.md                      # This file
-```
+- **Benchmarking Script**
+  - New `src/simulation/benchmark.py` runs short training sessions for both adapters.
+  - Records execution time, global metrics, and saves results to `experiments/results/`.
+  - Provides a quick way to compare performance and bandwidth savings.
 
 ## 🔧 Installation & Setup
 
 ### Prerequisites
 - Python 3.8+
-- GPU recommended for training (CPU works but slower)
+- GPU recommended for training (CPU supported but slower)
 - 4GB+ RAM, 5GB+ disk space
 
-### Installation
+### Step-by-Step Installation
 ```bash
-# Clone repository
-git clone <repo-url> && cd TaniFi
+# 1. Clone repository
+git clone https://github.com/your-username/TaniFi.git
+cd TaniFi
 
-# Create and activate virtual environment
+# 2. Create and activate virtual environment
 python3 -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+source venv/bin/activate  # Linux/Mac
+venv\Scripts\activate    # Windows
 
-# Install dependencies
+# 3. Install dependencies
 pip install -r requirements.txt
 
-# YOLO model (automatic download by ultralytics)
-# The model downloads on first run
+# 4. Verify setup
+python verify_setup.py
 ```
 
-## ⚠️ Dataset Setup - WeedsGalore
+The YOLOv11 model (`yolo11n-cls.pt`) will be automatically downloaded on first run.
 
-**Important**: For real experiments, you need the WeedsGalore dataset.
+## ⚠️ Dataset Setup
+
+### WeedsGalore Dataset
+For real experiments, download the WeedsGalore dataset:
 
 ```bash
-# Option 1: Quick test with synthetic data (no download needed)
-python3 src/simulation/diloco_trainer.py --config experiments/config.yaml
-
-# Option 2: Real data from Kaggle
+# Manual download (recommended):
 # 1. Visit: https://www.kaggle.com/datasets/vinayakshanawad/weedsgalore
 # 2. Download and extract to: data/weedsgalore/weedsgalore-dataset/
-#
-# Structure:
-# data/weedsgalore/weedsgalore-dataset/
-# ├── 2023-05-25/ (images, semantics folders)
-# ├── splits/ (train.txt, val.txt, test.txt)
-# └── ... more date folders
+
+# Automated download (requires Kaggle API):
+python src/simulation/download_dataset.py --dataset weedsgalore
 ```
 
-## 🚀 Usage
+### Required Dataset Structure
+```
+data/weedsgalore/weedsgalore-dataset/
+├── 2023-05-25/
+│   ├── images/       # Contains _R.png, _G.png, _B.png files
+│   └── semantics/    # Contains semantic masks (.png)
+├── 2023-05-30/
+├── ...
+└── splits/           # Contains train.txt, val.txt, test.txt
+```
 
-### 1. DiLoCo Federated Learning
+### Verification
 ```bash
-python3 src/simulation/diloco_trainer.py \
+ls -la data/weedsgalore/weedsgalore-dataset/
+# Should show date folders and splits/
+```
+
+## 🚀 Running Experiments
+
+### 1. Federated Learning (DiLoCo)
+```bash
+python src/simulation/diloco_trainer.py \
     --real-data \
     --config experiments/config_10f_20r_500s.yaml
 ```
 
 ### 2. Centralized Baseline
 ```bash
-python3 src/simulation/diloco_trainer.py \
+python src/simulation/diloco_trainer.py \
     --real-data \
     --centralized \
     --config experiments/config.yaml
 ```
 
-### 3. Custom Config
+### 3. Custom Configuration
 ```bash
-python3 src/simulation/diloco_trainer.py \
+python src/simulation/diloco_trainer.py \
     --real-data \
     --num-farmers 5 \
     --total-rounds 30 \
     --local-steps 200
 ```
 
-## 📦 Structure Cleaned
-
-✅ **Completed Refactoring:**
-- Removed `data/processed/` (unused)
-- Renamed `data/raw/` → `data/weedsgalore/`
-- Removed `src/contracts/` (empty)
-- Removed `models/checkpoints/` instructions (was empty)
-- Fixed all path references in code
-- Cleaned up README.md
-
-🔍 **Verify:**
+### 4. Parameter Sweep
 ```bash
-ls -la data/weedsgalore/weedsgalore-dataset/
-# Should show date folders and splits/
+# Generate multiple configurations
+python experiments/generate_configs.py
+
+# Run all experiments
+python experiments/run_experiments.py
 ```
 
-## 🚀 Ready to Experiment
+## 📁 Project Architecture
 
-After verifying `weedsgalore-dataset/` exists:
-
-```bash
-# Single experiment
-python3 src/simulation/diloco_trainer.py --real-data
-
-# Compare with centralized
-python3 src/simulation/diloco_trainer.py --real-data --centralized
+```
+TaniFi/
+├── data/                       # Agricultural datasets
+│   └── weedsgalore/            # WeedsGalore dataset
+│       └── weedsgalore-dataset/
+│           ├── 2023-05-25/     # Date-based folders
+│           ├── splits/         # Dataset splits
+│           └── ...
+│
+├── docs/                       # Research documentation
+│   └── Paper/                  # LaTeX paper templates
+│       ├── AuthorGuideline_JIKI/
+│       └── Paper-JIKI-Latex-Karel/
+│
+├── experiments/                # Experiment management
+│   ├── configs/                # Configuration files
+│   ├── results/                # Experiment outputs
+│   ├── generate_configs.py     # Config generator
+│   └── run_experiments.py      # Experiment runner
+│
+├── notebooks/                  # Data analysis
+│   └── analysis_template.ipynb # Jupyter analysis
+│
+├── src/simulation/             # Core simulation code
+│   ├── diloco_trainer.py       # Main training coordinator
+│   └── weedsgalore_loader.py   # Dataset loader
+│
+├── .gitignore                  # Git ignore rules
+├── LICENSE                     # MIT License
+├── README.md                   # This file
+├── requirements.txt            # Python dependencies
+└── verify_setup.py             # Environment verification
 ```
 
-**Results saved to**: `experiments/results/`
+## 📊 Results & Evaluation
+
+Experiment results are saved in `experiments/results/` with:
+- JSON files containing detailed metrics
+- PNG plots of training progress
+- LaTeX tables for paper inclusion
+
+To analyze results:
+```bash
+jupyter notebook notebooks/analysis_template.ipynb
+```
+
+Key metrics include:
+- **Communication Efficiency**: Bandwidth savings percentage
+- **Model Performance**: Accuracy, F1-Macro, loss curves
+- **Scalability**: Performance vs. number of farmers
+
+## 👥 Contributing
+
+Contributions are welcome! Please follow these steps:
+1. Fork the repository
+2. Create a new branch (`git checkout -b feature/your-feature`)
+3. Commit your changes (`git commit -am 'Add some feature'`)
+4. Push to the branch (`git push origin feature/your-feature`)
+5. Open a pull request
+
+## 📜 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ---
 
-**Status**: ✅ Refactored & Ready
+**Research Paper**: [Simulation of Bandwidth-Efficient Federated Learning Architectures for Resource-Constrained Agricultural Networks in Indonesia](docs/Paper/Paper-JIKI-Latex-Karel/mainTemplate_JIKI.pdf)
+
+**Status**: ✅ Production Ready | 🔬 Research Grade
