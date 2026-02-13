@@ -42,7 +42,7 @@ class WeedsGaloreDataset(Dataset):
     dominant non-background class strategy.
 
     Structure:
-        data/raw/weedsgalore/weedsgalore-dataset/
+        data/weedsgalore/weedsgalore-dataset/
         ├── 2023-05-25/
         │   ├── images/
         │   │   ├── {image_id}_R.png
@@ -198,7 +198,7 @@ def create_weedsgalore_loaders(batch_size=8, img_size=224):
     from torch.utils.data import DataLoader
 
     project_root = Path(__file__).parent.parent.parent
-    root = project_root / 'data/raw/weedsgalore/weedsgalore-dataset'
+    root = project_root / 'data/weedsgalore/weedsgalore-dataset'
 
     # Training transforms with augmentation for small dataset
     train_transform = transforms.Compose([

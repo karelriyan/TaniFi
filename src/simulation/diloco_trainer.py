@@ -483,361 +483,186 @@ class DiLoCoCoordinator:
             round_start = time.time()
             progress_pct = (round_num / num_rounds) * 100
             progress_bar = self._make_progress_bar(round_num, num_rounds)
+            print(f"\r{progress_bar} {progress_pct:5.1f}% | Round {round_num + 1}/{num_rounds}", end="", flush=True)
 
-            if round_times:
-                avg_round_time = np.mean(round_times)
-                remaining = num_rounds - round_num
-                eta_seconds = avg_round_time * remaining
-                eta_str = f"ETA: {eta_seconds/60:.1f} min" if eta_seconds > 60 else f"ETA: {eta_seconds:.0f}s"
-            else:
-                eta_str = "ETA: calculating..."
-
-            print(f"\n{'='*60}")
-            print(f"PROGRESS: {progress_bar} {progress_pct:.0f}% | Round {round_num + 1}/{num_rounds} | {eta_str}")
-            print(f"{'='*60}")
-
-            self.federated_round(round_num)
+            loss = self.federated_round(round_num)
 
             round_time = time.time() - round_start
             round_times.append(round_time)
-            print(f"   Round completed in {round_time:.1f}s")
+            avg_round_time = np.mean(round_times) if round_times else 0
+            remaining_time = avg_round_time * (num_rounds - round_num - 1)
 
-            current_round = round_num + 1
-            if current_round in checkpoint_rounds:
-                self.execution_duration = time.time() - training_start_time
-                self.save_results(config=config, checkpoint_round=current_round, total_rounds=num_rounds)
-                self.plot_metrics(checkpoint_round=current_round, total_rounds=num_rounds)
+            print(f"   Round time: {round_time:.1f}s | Est. remaining: {remaining_time:.0f}s")
 
-        # Final test evaluation (average across all farmers)
-        if self.test_loader is not None:
-            criterion = nn.CrossEntropyLoss()
-            all_test = [evaluate_model(f.model, self.test_loader, criterion, self.device)
-                        for f in self.farmer_nodes]
-            self.test_metrics = {
-                'loss': float(np.mean([t['loss'] for t in all_test])),
-                'accuracy': float(np.mean([t['accuracy'] for t in all_test])),
-                'f1_macro': float(np.mean([t['f1_macro'] for t in all_test])),
-            }
-            print(f"\n{'='*60}")
-            print(f"TEST RESULTS")
-            print(f"{'='*60}")
-            print(f"   Test Loss: {self.test_metrics['loss']:.4f}")
-            print(f"   Test Accuracy: {self.test_metrics['accuracy']:.4f}")
-            print(f"   Test F1 (macro): {self.test_metrics['f1_macro']:.4f}")
-            print(f"{'='*60}")
+            if round_num + 1 in checkpoint_rounds:
+                self.save_checkpoint(round_num + 1, config)
 
-        self.execution_duration = time.time() - training_start_time
-        print(f"\nTraining Complete! ({self.execution_duration/60:.2f} minutes)")
+        total_time = time.time() - training_start_time
+        print(f"\n{'='*60}")
+        print(f"Training completed in {total_time:.1f}s ({total_time/60:.1f}m)")
+        print(f"Average round time: {np.mean(round_times):.1f}s")
+        print(f"{'='*60}")
 
-        # Final save with test metrics included
-        self.save_results(config=config, checkpoint_round=num_rounds, total_rounds=num_rounds)
+        return self.global_metrics
 
-    def save_results(self, config=None, checkpoint_round=None, total_rounds=None):
-        """Save training results with comprehensive metadata."""
-        results_dir = Path(__file__).parent.parent.parent / 'experiments' / 'results'
-        results_dir.mkdir(parents=True, exist_ok=True)
+    def save_checkpoint(self, round_num, config=None):
+        """Save checkpoint including metrics and model."""
+        checkpoint_dir = Path(__file__).parent.parent / 'checkpoints'
+        checkpoint_dir.mkdir(exist_ok=True)
 
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        current_rounds = checkpoint_round if checkpoint_round else len(self.global_metrics['rounds'])
+        filename = f"diloco_f{self.num_farmers}_r{self.total_rounds}_s{self.local_steps}_{timestamp}.pt"
+        checkpoint_path = checkpoint_dir / filename
 
-        comprehensive_results = {
-            "experiment_info": {
-                "experiment_id": f"diloco_{self.num_farmers}f_{self.local_steps}steps_{timestamp}",
-                "timestamp": datetime.now().isoformat(),
-                "description": "DiLoCo federated learning simulation for TaniFi research",
-                "is_federated": True,
-                "checkpoint_round": checkpoint_round,
-                "total_rounds": total_rounds
-            },
-            "configuration": {
-                "num_farmers": self.num_farmers,
-                "local_steps": self.local_steps,
-                "num_rounds": current_rounds,
-                "total_planned_rounds": total_rounds,
-                "device": str(self.device),
-            },
-            "execution_time_seconds": getattr(self, 'execution_duration', None),
-            "execution_time_minutes": getattr(self, 'execution_duration', 0) / 60 if hasattr(self, 'execution_duration') else None,
-            "environment": {
-                "pytorch_version": torch.__version__,
-                "cuda_available": torch.cuda.is_available(),
-                "cuda_version": torch.version.cuda if torch.cuda.is_available() else None,
-                "device_name": torch.cuda.get_device_name(0) if torch.cuda.is_available() else "CPU"
-            },
-            "results": {
-                "metrics": {
-                    "rounds": self.global_metrics['rounds'][:current_rounds],
-                    "avg_loss": self.global_metrics['avg_loss'][:current_rounds],
-                    "bandwidth_saved": self.global_metrics['bandwidth_saved'][:current_rounds],
-                    "val_loss": self.global_metrics['val_loss'][:current_rounds],
-                    "val_accuracy": self.global_metrics['val_accuracy'][:current_rounds],
-                    "val_f1_macro": self.global_metrics['val_f1_macro'][:current_rounds],
-                },
-                "summary": {
-                    "initial_loss": self.global_metrics['avg_loss'][0],
-                    "final_loss": self.global_metrics['avg_loss'][current_rounds - 1],
-                    "loss_reduction_percent": (
-                        (self.global_metrics['avg_loss'][0] - self.global_metrics['avg_loss'][current_rounds - 1]) /
-                        self.global_metrics['avg_loss'][0] * 100
-                    ),
-                    "avg_bandwidth_saved_percent": np.mean(self.global_metrics['bandwidth_saved'][:current_rounds]),
-                    "final_val_accuracy": self.global_metrics['val_accuracy'][-1] if self.global_metrics.get('val_accuracy') else None,
-                    "final_val_f1": self.global_metrics['val_f1_macro'][-1] if self.global_metrics.get('val_f1_macro') else None,
-                },
-                "test_metrics": self.test_metrics,
-            }
+        checkpoint = {
+            'global_metrics': self.global_metrics,
+            'config': config,
+            'num_farmers': self.num_farmers,
+            'local_steps': self.local_steps,
+            'total_rounds': self.total_rounds,
+            'timestamp': timestamp,
         }
 
-        if config is not None:
-            comprehensive_results["full_config"] = config
+        torch.save(checkpoint, checkpoint_path)
+        print(f"  Checkpoint saved: {checkpoint_path}")
 
-        filename = f'diloco_{self.num_farmers}f_{current_rounds}r_{self.local_steps}s_{timestamp}.json'
-        results_file = results_dir / filename
+    def evaluate_final(self, test_loader=None):
+        """Evaluate all farmer models on test set and compute average."""
+        if test_loader is None:
+            if self.test_loader is None:
+                raise ValueError("No test loader provided or initialized")
+            test_loader = self.test_loader
 
-        # If we already saved for this round, overwrite that file
-        if hasattr(self, '_last_save_round') and self._last_save_round == current_rounds and hasattr(self, '_last_save_path'):
-            results_file = Path(self._last_save_path)
+        criterion = nn.CrossEntropyLoss()
+        all_metrics = [evaluate_model(f.model, test_loader, criterion, self.device)
+                       for f in self.farmer_nodes]
 
-        with open(results_file, 'w') as f:
-            json.dump(comprehensive_results, f, indent=2)
+        self.test_metrics = {
+            'avg_loss': float(np.mean([m['loss'] for m in all_metrics])),
+            'avg_accuracy': float(np.mean([m['accuracy'] for m in all_metrics])),
+            'avg_f1_macro': float(np.mean([m['f1_macro'] for m in all_metrics])),
+            'std_accuracy': float(np.std([m['accuracy'] for m in all_metrics])),
+            'std_f1_macro': float(np.std([m['f1_macro'] for m in all_metrics])),
+            'num_farmers': len(self.farmer_nodes),
+        }
 
-        self._last_save_round = current_rounds
-        self._last_save_path = str(results_file)
-        print(f"Results saved to: {results_file}")
+        print(f"\nFinal Test Results (avg across {len(self.farmer_nodes)} farmers):")
+        print(f"  Loss:       {self.test_metrics['avg_loss']:.4f}")
+        print(f"  Accuracy:   {self.test_metrics['avg_accuracy']:.4f} ± {self.test_metrics['std_accuracy']:.4f}")
+        print(f"  F1-Macro:   {self.test_metrics['avg_f1_macro']:.4f} ± {self.test_metrics['std_f1_macro']:.4f}")
 
-    def plot_metrics(self, checkpoint_round=None, total_rounds=None):
-        """Generate plots for paper."""
-        current_rounds = checkpoint_round if checkpoint_round else len(self.global_metrics['rounds'])
-        rounds_data = self.global_metrics['rounds'][:current_rounds]
-        loss_data = self.global_metrics['avg_loss'][:current_rounds]
-        bandwidth_data = self.global_metrics['bandwidth_saved'][:current_rounds]
-
-        has_val = len(self.global_metrics.get('val_accuracy', [])) >= current_rounds
-
-        ncols = 3 if has_val else 2
-        fig, axes = plt.subplots(1, ncols, figsize=(5 * ncols, 4))
-
-        # Loss curve
-        axes[0].plot(rounds_data, loss_data, marker='o', linewidth=2)
-        axes[0].set_xlabel('Federated Round')
-        axes[0].set_ylabel('Average Loss')
-        axes[0].set_title('Training Loss ({} farmers, {} steps)'.format(self.num_farmers, self.local_steps))
-        axes[0].grid(True, alpha=0.3)
-
-        # Bandwidth savings
-        axes[1].plot(rounds_data, bandwidth_data, marker='s', color='green', linewidth=2)
-        axes[1].set_xlabel('Federated Round')
-        axes[1].set_ylabel('Bandwidth Saved (%)')
-        axes[1].set_title('Communication Efficiency')
-        axes[1].grid(True, alpha=0.3)
-
-        # Accuracy curve
-        if has_val:
-            acc_data = self.global_metrics['val_accuracy'][:current_rounds]
-            f1_data = self.global_metrics['val_f1_macro'][:current_rounds]
-            axes[2].plot(rounds_data, acc_data, marker='o', linewidth=2, label='Accuracy')
-            axes[2].plot(rounds_data, f1_data, marker='s', linewidth=2, label='F1 (macro)')
-            axes[2].set_xlabel('Federated Round')
-            axes[2].set_ylabel('Score')
-            axes[2].set_title('Validation Metrics')
-            axes[2].legend()
-            axes[2].grid(True, alpha=0.3)
-
-        plt.tight_layout()
-
-        results_dir = Path(__file__).parent.parent.parent / 'experiments' / 'results'
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        filename = 'diloco_{}f_{}r_{}s_{}.png'.format(self.num_farmers, current_rounds, self.local_steps, timestamp)
-        plt.savefig(results_dir / filename, dpi=300, bbox_inches='tight')
-        plt.close()
+        return self.test_metrics
 
 
 # =============================================================================
 # CENTRALIZED BASELINE
 # =============================================================================
 
-def train_centralized_baseline(train_dataset, val_dataset, test_dataset,
-                                num_classes=3, num_steps=10000, eval_every=200,
-                                device='cpu', config=None):
-    """Train a centralized baseline (no federation) for comparison.
-
-    Trains YOLOv11ClassificationModel on ALL training data using step-based
-    training to match the total training volume of federated approaches.
-    This serves as the upper-bound performance reference.
-
-    Args:
-        num_steps: Total gradient steps (default 10,000 to match federated).
-        eval_every: Evaluate on val set every N steps (default 200).
-    """
+def train_centralized_baseline(model, train_dataset, val_dataset, test_dataset,
+                               num_epochs=10, batch_size=32, device='cpu'):
+    """Centralized baseline training for comparison."""
     print(f"\n{'='*60}")
     print(f"Centralized Baseline Training")
     print(f"{'='*60}")
-    print(f"Classes: {num_classes}, Steps: {num_steps}, Eval every: {eval_every}, Device: {device}")
-    print(f"Train: {len(train_dataset)}, Val: {len(val_dataset)}, Test: {len(test_dataset)}")
-    print(f"{'='*60}\n")
 
-    model = YOLOv11ClassificationModel(num_classes=num_classes).to(device)
-    base_lr = 0.001
-    optimizer = optim.AdamW(model.parameters(), lr=base_lr, weight_decay=0.0001)
+    train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
+    val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
+    test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
+
+    # Compute class weights for weighted loss
     class_weights = compute_class_weights(train_dataset)
     criterion = nn.CrossEntropyLoss(weight=class_weights.to(device))
-    eval_criterion = nn.CrossEntropyLoss()  # unweighted for eval
+    optimizer = optim.AdamW(model.parameters(), lr=0.001, weight_decay=0.0001)
+    scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=num_epochs)
 
-    train_loader = DataLoader(train_dataset, batch_size=16, shuffle=True, num_workers=4, pin_memory=True)
-    val_loader = DataLoader(val_dataset, batch_size=64, shuffle=False, num_workers=4)
-    test_loader = DataLoader(test_dataset, batch_size=64, shuffle=False, num_workers=4)
-
-    use_amp = device == 'cuda'
-    scaler = torch.amp.GradScaler('cuda') if use_amp else None
-
-    if use_amp:
-        torch.backends.cudnn.benchmark = True
-        torch.backends.cuda.matmul.allow_tf32 = True
-        torch.backends.cudnn.allow_tf32 = True
-
-    # Warmup + cosine scheduler (matching federated setup)
-    warmup_steps = num_steps // 10
-
-    def get_lr(step):
-        if step < warmup_steps:
-            return base_lr * (step + 1) / warmup_steps
-        progress = (step - warmup_steps) / max(1, num_steps - warmup_steps)
-        return base_lr * 0.5 * (1.0 + np.cos(np.pi * progress))
-
-    metrics = {
-        'steps': [], 'train_loss': [],
-        'val_loss': [], 'val_accuracy': [], 'val_f1_macro': []
+    history = {
+        'train_loss': [], 'train_acc': [], 'train_f1': [],
+        'val_loss': [], 'val_acc': [], 'val_f1': [],
     }
 
-    start_time = time.time()
-    step = 0
-    recent_losses = []
+    for epoch in range(num_epochs):
+        # Training
+        model.train()
+        train_preds, train_labels = [], []
+        epoch_loss = 0.0
 
-    while step < num_steps:
-        for data, target in train_loader:
-            if step >= num_steps:
-                break
-
-            # Update LR
-            lr = get_lr(step)
-            for param_group in optimizer.param_groups:
-                param_group['lr'] = lr
-
-            model.train()
+        for batch_idx, (data, target) in enumerate(train_loader):
             data, target = data.to(device), target.to(device)
-            optimizer.zero_grad(set_to_none=True)
-            if use_amp:
-                with torch.amp.autocast('cuda'):
-                    output = model(data)
-                    loss = criterion(output, target)
-                scaler.scale(loss).backward()
-                scaler.step(optimizer)
-                scaler.update()
-            else:
+            optimizer.zero_grad()
+            output = model(data)
+            loss = criterion(output, target)
+            loss.backward()
+            optimizer.step()
+
+            epoch_loss += loss.item()
+            train_preds.extend(output.argmax(dim=1).cpu().numpy())
+            train_labels.extend(target.cpu().numpy())
+
+        train_loss = epoch_loss / len(train_loader)
+        train_acc = accuracy_score(train_labels, train_preds)
+        train_f1 = f1_score(train_labels, train_preds, average='macro', zero_division=0)
+
+        history['train_loss'].append(train_loss)
+        history['train_acc'].append(train_acc)
+        history['train_f1'].append(train_f1)
+
+        # Validation
+        model.eval()
+        val_preds, val_labels = [], []
+        val_loss = 0.0
+
+        with torch.no_grad():
+            for data, target in val_loader:
+                data, target = data.to(device), target.to(device)
                 output = model(data)
                 loss = criterion(output, target)
-                loss.backward()
-                optimizer.step()
-            recent_losses.append(loss.item())
-            step += 1
+                val_loss += loss.item()
+                val_preds.extend(output.argmax(dim=1).cpu().numpy())
+                val_labels.extend(target.cpu().numpy())
 
-            # Evaluate at intervals
-            if step % eval_every == 0 or step == num_steps:
-                avg_train_loss = np.mean(recent_losses)
-                recent_losses = []
-                val_results = evaluate_model(model, val_loader, eval_criterion, device)
+        val_loss /= len(val_loader)
+        val_acc = accuracy_score(val_labels, val_preds)
+        val_f1 = f1_score(val_labels, val_preds, average='macro', zero_division=0)
 
-                metrics['steps'].append(step)
-                metrics['train_loss'].append(float(avg_train_loss))
-                metrics['val_loss'].append(val_results['loss'])
-                metrics['val_accuracy'].append(val_results['accuracy'])
-                metrics['val_f1_macro'].append(val_results['f1_macro'])
+        history['val_loss'].append(val_loss)
+        history['val_acc'].append(val_acc)
+        history['val_f1'].append(val_f1)
 
-                elapsed = time.time() - start_time
-                eta = elapsed / step * (num_steps - step) if step > 0 else 0
-                print(f"Step {step:5d}/{num_steps} - Loss: {avg_train_loss:.4f}, "
-                      f"Val Acc: {val_results['accuracy']:.4f}, Val F1: {val_results['f1_macro']:.4f}, "
-                      f"LR: {lr:.6f}, ETA: {eta/60:.1f}min")
+        scheduler.step()
 
-    execution_time = time.time() - start_time
+        print(f"Epoch {epoch+1}/{num_epochs}: "
+              f"Train Loss: {train_loss:.4f}, Train Acc: {train_acc:.4f}, "
+              f"Val Loss: {val_loss:.4f}, Val Acc: {val_acc:.4f}")
 
     # Final test evaluation
-    test_results = evaluate_model(model, test_loader, eval_criterion, device)
-    print(f"\n{'='*60}")
-    print(f"TEST RESULTS (Centralized, {num_steps} steps)")
-    print(f"{'='*60}")
-    print(f"   Test Loss: {test_results['loss']:.4f}")
-    print(f"   Test Accuracy: {test_results['accuracy']:.4f}")
-    print(f"   Test F1 (macro): {test_results['f1_macro']:.4f}")
-    print(f"{'='*60}")
+    model.eval()
+    test_preds, test_labels = [], []
+    test_loss = 0.0
 
-    # Save results
-    num_evals = len(metrics['steps'])
-    results = {
-        "experiment_info": {
-            "experiment_id": f"centralized_baseline_{datetime.now().strftime('%Y%m%d_%H%M%S')}",
-            "timestamp": datetime.now().isoformat(),
-            "description": f"Centralized baseline ({num_steps} steps, no federation, no LoRA)",
-            "is_federated": False,
-        },
-        "configuration": {
-            "num_farmers": 0,
-            "local_steps": 0,
-            "num_rounds": num_evals,
-            "total_steps": num_steps,
-            "eval_every": eval_every,
-            "num_classes": num_classes,
-            "device": str(device),
-        },
-        "execution_time_seconds": execution_time,
-        "execution_time_minutes": execution_time / 60,
-        "environment": {
-            "pytorch_version": torch.__version__,
-            "cuda_available": torch.cuda.is_available(),
-            "cuda_version": torch.version.cuda if torch.cuda.is_available() else None,
-            "device_name": torch.cuda.get_device_name(0) if torch.cuda.is_available() else "CPU"
-        },
-        "results": {
-            "metrics": metrics,
-            "summary": {
-                "initial_loss": metrics['train_loss'][0],
-                "final_loss": metrics['train_loss'][-1],
-                "loss_reduction_percent": (metrics['train_loss'][0] - metrics['train_loss'][-1]) / metrics['train_loss'][0] * 100,
-                "avg_bandwidth_saved_percent": 0.0,
-                "final_val_accuracy": metrics['val_accuracy'][-1],
-                "final_val_f1": metrics['val_f1_macro'][-1],
-            },
-            "test_metrics": test_results,
-        }
-    }
+    with torch.no_grad():
+        for data, target in test_loader:
+            data, target = data.to(device), target.to(device)
+            output = model(data)
+            loss = criterion(output, target)
+            test_loss += loss.item()
+            test_preds.extend(output.argmax(dim=1).cpu().numpy())
+            test_labels.extend(target.cpu().numpy())
 
-    if config is not None:
-        results["full_config"] = config
+    test_loss /= len(test_loader)
+    test_acc = accuracy_score(test_labels, test_preds)
+    test_f1 = f1_score(test_labels, test_preds, average='macro', zero_division=0)
 
-    results_dir = Path(__file__).parent.parent.parent / 'experiments' / 'results'
-    results_dir.mkdir(parents=True, exist_ok=True)
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    filename = f'centralized_baseline_{timestamp}.json'
-    with open(results_dir / filename, 'w') as f:
-        json.dump(results, f, indent=2)
-    print(f"\nResults saved to: {results_dir / filename}")
+    print(f"\nFinal Test Results:")
+    print(f"  Loss: {test_loss:.4f}")
+    print(f"  Accuracy: {test_acc:.4f}")
+    print(f"  F1-Macro: {test_f1:.4f}")
 
-    return results
+    return history, {'loss': test_loss, 'accuracy': test_acc, 'f1_macro': test_f1}
 
 
 # =============================================================================
-# DATA LOADING
+# DATASET CREATION
 # =============================================================================
-
-USE_REAL_DATA = True
-
-def create_dummy_dataset(num_samples=10000, img_size=64, num_classes=3):
-    """Create dummy dataset for pipeline testing."""
-    print("Using DUMMY dataset (random data)")
-    images = torch.randn(num_samples, 3, img_size, img_size)
-    labels = torch.randint(0, num_classes, (num_samples,))
-    return torch.utils.data.TensorDataset(images, labels)
-
 
 def create_weedsgalore_dataset(img_size=64, split='train'):
     """Create WeedsGalore dataset with real labels from semantic masks."""
@@ -868,7 +693,7 @@ def create_weedsgalore_dataset(img_size=64, split='train'):
         ])
 
     project_root = Path(__file__).parent.parent.parent
-    dataset_root = project_root / 'data/raw/weedsgalore/weedsgalore-dataset'
+    dataset_root = project_root / 'data/weedsgalore/weedsgalore-dataset'
 
     if not dataset_root.exists():
         raise FileNotFoundError(f"WeedsGalore dataset not found at: {dataset_root}")
@@ -878,132 +703,271 @@ def create_weedsgalore_dataset(img_size=64, split='train'):
 
 
 def create_dataset(use_real_data=None, num_samples=10000, img_size=64, num_classes=3, split='train'):
-    """Main dataset creation function."""
-    should_use_real = use_real_data if use_real_data is not None else USE_REAL_DATA
+    """Create dataset - either synthetic or WeedsGalore real data."""
+    from torchvision import transforms
+    from torchvision.datasets import FakeData
 
-    if should_use_real:
-        dataset = create_weedsgalore_dataset(img_size=img_size, split=split)
+    if use_real_data is None:
+        # Try to detect if real data exists
+        project_root = Path(__file__).parent.parent.parent
+        dataset_root = project_root / 'data/weedsgalore/weedsgalore-dataset'
+        if dataset_root.exists():
+            use_real_data = True
+            print(f"✅ WeedsGalore dataset found at: {dataset_root}")
+        else:
+            use_real_data = False
+            print(f"⚠️  WeedsGalore dataset not found. Using synthetic data.")
+
+    if use_real_data:
+        return create_weedsgalore_dataset(img_size=img_size, split=split)
     else:
-        dataset = create_dummy_dataset(num_samples=num_samples, img_size=img_size, num_classes=num_classes)
+        # Synthetic data for quick testing
+        transform = transforms.Compose([
+            transforms.Resize((img_size, img_size)),
+            transforms.ToTensor(),
+            transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+        ])
+        dataset = FakeData(size=num_samples, image_size=(3, img_size, img_size),
+                           num_classes=num_classes, transform=transform)
+        return dataset
 
-    return dataset
 
+# =============================================================================
+# MAIN TRAINING FUNCTION
+# =============================================================================
 
-def load_config(config_path='../../experiments/config.yaml'):
-    """Load configuration from YAML file."""
+def main_training(config_file=None, centralized=False, real_data=True, save_plots=True):
+    """Main training function."""
     import yaml
-    config_file = Path(__file__).parent / config_path
-    if not config_file.exists():
-        print(f"Config file not found: {config_file}, using defaults")
-        return None
-    with open(config_file, 'r') as f:
-        config = yaml.safe_load(f)
-    print(f"Loaded config from: {config_file}")
-    return config
+    import argparse
 
-
-# =============================================================================
-# MAIN
-# =============================================================================
-
-def main(config_path='../../experiments/config.yaml', use_real_data=None, centralized=False, num_steps_override=None):
-    """Main simulation entry point."""
-    RANDOM_SEED = 42
-    torch.manual_seed(RANDOM_SEED)
-    np.random.seed(RANDOM_SEED)
-    if torch.cuda.is_available():
-        torch.cuda.manual_seed_all(RANDOM_SEED)
-
-    config = load_config(config_path)
-
-    if config is None:
-        NUM_FARMERS = 10
-        LOCAL_STEPS = 100
-        NUM_ROUNDS = 10
-        NUM_CLASSES = 3
-        IMG_SIZE = 224
-        CHECKPOINT_ROUNDS = None
+    # Load config if provided
+    if config_file:
+        with open(config_file, 'r') as f:
+            config = yaml.safe_load(f)
     else:
-        NUM_FARMERS = config['federated']['num_farmers']
-        LOCAL_STEPS = config['federated']['local_steps']
-        NUM_ROUNDS = config['federated']['num_rounds']
-        NUM_CLASSES = config['model']['num_classes']
-        IMG_SIZE = config['dataset']['image_size']
-        CHECKPOINT_ROUNDS = config['federated'].get('checkpoint_rounds', None)
+        config = {
+            'num_farmers': 10,
+            'local_steps': 100,
+            'total_rounds': 20,
+            'warmup_rounds': 5,
+            'img_size': 64,
+            'batch_size': 32,
+            'num_epochs_baseline': 10,
+        }
 
-    DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
-    print(f"Device: {DEVICE}")
+    # Set up device
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    print(f"Using device: {device}")
 
-    # Determine if using real data
-    should_use_real = use_real_data if use_real_data is not None else USE_REAL_DATA
+    # Create datasets
+    print(f"\n{'='*60}")
+    print("Loading datasets...")
+    train_dataset = create_dataset(use_real_data=real_data, img_size=config['img_size'], split='train')
+    val_dataset = create_dataset(use_real_data=real_data, img_size=config['img_size'], split='val')
+    test_dataset = create_dataset(use_real_data=real_data, img_size=config['img_size'], split='test')
 
-    # Load datasets
-    print("\nLoading datasets...")
-    train_dataset = create_dataset(use_real_data=use_real_data, img_size=IMG_SIZE, num_classes=NUM_CLASSES, split='train')
-    print(f"Train: {len(train_dataset)} samples")
+    print(f"  Train samples: {len(train_dataset)}")
+    print(f"  Val samples:   {len(val_dataset)}")
+    print(f"  Test samples:  {len(test_dataset)}")
 
-    val_dataset = None
-    test_dataset = None
-    if should_use_real:
-        val_dataset = create_dataset(use_real_data=True, img_size=IMG_SIZE, num_classes=NUM_CLASSES, split='val')
-        test_dataset = create_dataset(use_real_data=True, img_size=IMG_SIZE, num_classes=NUM_CLASSES, split='test')
-        print(f"Val: {len(val_dataset)} samples, Test: {len(test_dataset)} samples")
-
-    # Centralized baseline mode
     if centralized:
-        if val_dataset is None or test_dataset is None:
-            print("ERROR: Centralized baseline requires --real-data flag")
-            return
-        # Match federated training volume: local_steps * num_rounds
-        total_steps = num_steps_override if num_steps_override else LOCAL_STEPS * NUM_ROUNDS
-        train_centralized_baseline(
-            train_dataset, val_dataset, test_dataset,
-            num_classes=NUM_CLASSES, num_steps=total_steps,
-            eval_every=max(1, total_steps // 50),
-            device=DEVICE, config=config
+        # Centralized baseline training
+        print(f"\n{'='*60}")
+        print("Running centralized baseline...")
+        model = YOLOv11ClassificationModel(num_classes=3).to(device)
+        history, test_metrics = train_centralized_baseline(
+            model, train_dataset, val_dataset, test_dataset,
+            num_epochs=config['num_epochs_baseline'],
+            batch_size=config['batch_size'],
+            device=device
         )
-        return
 
-    # Federated training
-    base_model = YOLOv11ClassificationModel(num_classes=NUM_CLASSES)
+        # Save baseline results
+        results_dir = Path(__file__).parent.parent / 'experiments' / 'results'
+        results_dir.mkdir(parents=True, exist_ok=True)
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 
-    coordinator = DiLoCoCoordinator(
-        base_model=base_model,
-        num_farmers=NUM_FARMERS,
-        local_steps=LOCAL_STEPS,
-        device=DEVICE
-    )
+        results = {
+            'config': config,
+            'history': history,
+            'test_metrics': test_metrics,
+            'timestamp': timestamp,
+            'training_type': 'centralized_baseline',
+        }
 
-    coordinator.initialize_farmers(train_dataset, non_iid=True,
-                                    val_dataset=val_dataset, test_dataset=test_dataset,
-                                    total_rounds=NUM_ROUNDS, warmup_rounds=max(1, NUM_ROUNDS // 10))
+        json_path = results_dir / f'centralized_baseline_{timestamp}.json'
+        with open(json_path, 'w') as f:
+            json.dump(results, f, indent=2)
 
-    coordinator.train(num_rounds=NUM_ROUNDS, config=config, checkpoint_rounds=CHECKPOINT_ROUNDS)
+        print(f"\n✅ Centralized baseline results saved to: {json_path}")
 
-    print("\nSimulation complete!")
+        # Plot results
+        if save_plots:
+            plt.figure(figsize=(12, 4))
+            plt.subplot(1, 3, 1)
+            plt.plot(history['train_loss'], label='Train')
+            plt.plot(history['val_loss'], label='Val')
+            plt.title('Loss')
+            plt.xlabel('Epoch')
+            plt.legend()
 
+            plt.subplot(1, 3, 2)
+            plt.plot(history['train_acc'], label='Train')
+            plt.plot(history['val_acc'], label='Val')
+            plt.title('Accuracy')
+            plt.xlabel('Epoch')
+
+            plt.subplot(1, 3, 3)
+            plt.plot(history['train_f1'], label='Train')
+            plt.plot(history['val_f1'], label='Val')
+            plt.title('F1-Score (Macro)')
+            plt.xlabel('Epoch')
+
+            plt.tight_layout()
+            plot_path = results_dir / f'centralized_baseline_{timestamp}.png'
+            plt.savefig(plot_path, dpi=150, bbox_inches='tight')
+            plt.close()
+            print(f"📊 Plot saved to: {plot_path}")
+
+    else:
+        # Federated learning with DiLoCo
+        print(f"\n{'='*60}")
+        print("Running DiLoCo federated learning...")
+
+        base_model = YOLOv11ClassificationModel(num_classes=3).to(device)
+        coordinator = DiLoCoCoordinator(
+            base_model,
+            num_farmers=config['num_farmers'],
+            local_steps=config['local_steps'],
+            device=device
+        )
+
+        coordinator.initialize_farmers(
+            train_dataset,
+            non_iid=True,
+            val_dataset=val_dataset,
+            test_dataset=test_dataset,
+            total_rounds=config['total_rounds'],
+            warmup_rounds=config['warmup_rounds']
+        )
+
+        global_metrics = coordinator.train(
+            num_rounds=config['total_rounds'],
+            config=config
+        )
+
+        test_metrics = coordinator.evaluate_final()
+
+        # Save results
+        results_dir = Path(__file__).parent.parent / 'experiments' / 'results'
+        results_dir.mkdir(parents=True, exist_ok=True)
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+
+        results = {
+            'config': config,
+            'global_metrics': global_metrics,
+            'test_metrics': test_metrics,
+            'timestamp': timestamp,
+            'training_type': 'diloco_federated',
+            'num_farmers': config['num_farmers'],
+            'local_steps': config['local_steps'],
+            'total_rounds': config['total_rounds'],
+        }
+
+        json_path = results_dir / f'diloco_{config["num_farmers"]}f_{config["total_rounds"]}r_{config["local_steps"]}s_{timestamp}.json'
+        with open(json_path, 'w') as f:
+            json.dump(results, f, indent=2)
+
+        print(f"\n✅ DiLoCo results saved to: {json_path}")
+
+        # Plot results
+        if save_plots:
+            plt.figure(figsize=(12, 4))
+
+            plt.subplot(1, 3, 1)
+            plt.plot(global_metrics['rounds'], global_metrics['avg_loss'])
+            plt.title('Average Local Loss per Round')
+            plt.xlabel('Round')
+            plt.ylabel('Loss')
+
+            plt.subplot(1, 3, 2)
+            plt.plot(global_metrics['rounds'], global_metrics['val_accuracy'])
+            plt.title('Validation Accuracy per Round')
+            plt.xlabel('Round')
+            plt.ylabel('Accuracy')
+
+            plt.subplot(1, 3, 3)
+            plt.plot(global_metrics['rounds'], global_metrics['val_f1_macro'])
+            plt.title('Validation F1-Macro per Round')
+            plt.xlabel('Round')
+            plt.ylabel('F1-Macro')
+
+            plt.tight_layout()
+            plot_path = results_dir / f'diloco_{config["num_farmers"]}f_{config["total_rounds"]}r_{config["local_steps"]}s_{timestamp}.png'
+            plt.savefig(plot_path, dpi=150, bbox_inches='tight')
+            plt.close()
+            print(f"📊 Plot saved to: {plot_path}")
+
+    print(f"\n{'='*60}")
+    print("Training completed successfully!")
+    print(f"{'='*60}")
+
+    return True
+
+
+# =============================================================================
+# COMMAND-LINE INTERFACE
+# =============================================================================
 
 if __name__ == '__main__':
     import argparse
 
-    parser = argparse.ArgumentParser(description='TaniFi DiLoCo Federated Learning Trainer')
-    parser.add_argument('--config', type=str, default='../../experiments/config.yaml')
-    parser.add_argument('--centralized', action='store_true', help='Run centralized baseline')
-    parser.add_argument('--num-steps', type=int, default=None,
-                        help='Total training steps for centralized baseline (default: local_steps * num_rounds from config)')
-
-    data_group = parser.add_mutually_exclusive_group()
-    data_group.add_argument('--real-data', action='store_true')
-    data_group.add_argument('--dummy-data', action='store_true')
+    parser = argparse.ArgumentParser(description='DiLoCo Federated Learning Simulation')
+    parser.add_argument('--config', type=str, default=None,
+                        help='Path to config YAML file')
+    parser.add_argument('--centralized', action='store_true',
+                        help='Run centralized baseline instead of federated')
+    parser.add_argument('--real-data', action='store_true',
+                        help='Use real WeedsGalore data instead of synthetic')
+    parser.add_argument('--no-plots', action='store_true',
+                        help='Disable saving plots')
+    parser.add_argument('--num-farmers', type=int, default=None,
+                        help='Override number of farmers in config')
+    parser.add_argument('--local-steps', type=int, default=None,
+                        help='Override local steps per round in config')
+    parser.add_argument('--total-rounds', type=int, default=None,
+                        help='Override total rounds in config')
 
     args = parser.parse_args()
 
-    if args.real_data:
-        use_real_data = True
-    elif args.dummy_data:
-        use_real_data = False
-    else:
-        use_real_data = None
+    # Override config if command-line arguments are provided
+    config = None
+    if args.config:
+        with open(args.config, 'r') as f:
+            config = yaml.safe_load(f)
 
-    main(config_path=args.config, use_real_data=use_real_data,
-         centralized=args.centralized, num_steps_override=args.num_steps)
+    if args.num_farmers is not None:
+        if config is None:
+            config = {}
+        config['num_farmers'] = args.num_farmers
+
+    if args.local_steps is not None:
+        if config is None:
+            config = {}
+        config['local_steps'] = args.local_steps
+
+    if args.total_rounds is not None:
+        if config is None:
+            config = {}
+        config['total_rounds'] = args.total_rounds
+
+    success = main_training(
+        config_file=args.config,
+        centralized=args.centralized,
+        real_data=args.real_data,
+        save_plots=not args.no_plots
+    )
+
+    if not success:
+        exit(1)

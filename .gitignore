@@ -19,11 +19,7 @@ ENV/
 *.ckpt
 
 # Data files (large datasets)
-data/raw/**/*.jpg
-data/raw/**/*.png
-data/raw/**/*.jpeg
-data/raw/**/*.zip
-data/raw/**/*.tar.gz
+data/weedsgalore/
 *.h5
 *.hdf5
 
@@ -68,3 +64,7 @@ artifacts/
 !data/processed/.gitkeep
 !models/checkpoints/.gitkeep
 !experiments/results/.gitkeep
+
+/docs/Sources
+.aider*
+.claude/

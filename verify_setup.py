@@ -1,116 +1,64 @@
 #!/usr/bin/env python3
 """
 Environment Verification Script for TaniFi Project
-
-This script checks if all dependencies and setup are correct
-Run this before starting the simulation to catch any issues early
-
-Usage:
-    python verify_setup.py
+Checks if all dependencies, datasets, and directories are properly set up.
 """
 
 import sys
 import subprocess
+import importlib
 from pathlib import Path
 
 
 def print_header(text):
     """Print formatted header"""
-    print(f"\n{'='*60}")
-    print(f"  {text}")
-    print(f"{'='*60}\n")
-
-
-def print_status(check_name, status, message=""):
-    """Print check status"""
-    icon = "✅" if status else "❌"
-    print(f"{icon} {check_name:<40} {'PASS' if status else 'FAIL'}")
-    if message and not status:
-        print(f"   💡 {message}")
+    print("\n" + "=" * 60)
+    print(f"{text:^60}")
+    print("=" * 60)
 
 
 def check_python_version():
-    """Check Python version >= 3.8"""
+    """Check Python version"""
+    print_header("Checking Python Version")
     version = sys.version_info
-    is_valid = version.major == 3 and version.minor >= 8
+    print(f"Python {version.major}.{version.minor}.{version.micro}")
     
-    print_status(
-        "Python Version (>= 3.8)",
-        is_valid,
-        f"Found: Python {version.major}.{version.minor}.{version.micro}"
-    )
-    return is_valid
-
-
-def check_package(package_name, import_name=None):
-    """Check if Python package is installed"""
-    if import_name is None:
-        import_name = package_name
-    
-    try:
-        __import__(import_name)
+    if version.major == 3 and version.minor >= 8:
+        print("✅ Python version OK (>= 3.8)")
         return True
-    except ImportError:
+    else:
+        print("❌ Python 3.8 or higher required")
         return False
 
 
-def check_dependencies():
-    """Check all required Python packages"""
-    print_header("Checking Python Dependencies")
+def check_required_packages():
+    """Check if required packages are installed"""
+    print_header("Checking Required Packages")
     
     required_packages = [
-        ('torch', 'torch'),
-        ('torchvision', 'torchvision'),
-        ('numpy', 'numpy'),
-        ('pandas', 'pandas'),
-        ('matplotlib', 'matplotlib'),
-        ('seaborn', 'seaborn'),
-        ('tqdm', 'tqdm'),
-        ('pyyaml', 'yaml'),
+        'torch',
+        'torchvision',
+        'numpy',
+        'pandas',
+        'matplotlib',
+        'scikit-learn',
+        'tqdm',
+        'pyyaml',
+        'pillow',
+        'ultralytics',
+        'pathlib',
     ]
     
-    all_ok = True
-    for pkg_name, import_name in required_packages:
-        status = check_package(pkg_name, import_name)
-        print_status(f"{pkg_name}", status, f"Install with: pip install {pkg_name}")
-        all_ok = all_ok and status
+    all_installed = True
+    for package in required_packages:
+        try:
+            importlib.import_module(package)
+            print(f"✅ {package}")
+        except ImportError as e:
+            print(f"❌ {package}: {e}")
+            all_installed = False
     
-    return all_ok
-
-
-def check_pytorch_cuda():
-    """Check PyTorch CUDA availability"""
-    print_header("Checking PyTorch Configuration")
-    
-    try:
-        import torch
-        
-        # Check PyTorch version
-        version_ok = torch.__version__ >= "2.0.0"
-        print_status(
-            f"PyTorch Version ({torch.__version__})",
-            version_ok,
-            "Consider upgrading: pip install torch --upgrade"
-        )
-        
-        # Check CUDA
-        cuda_available = torch.cuda.is_available()
-        print_status(
-            "CUDA Available",
-            cuda_available,
-            "GPU training not available. Will use CPU (slower)"
-        )
-        
-        if cuda_available:
-            device_name = torch.cuda.get_device_name(0)
-            print(f"   🎮 GPU Device: {device_name}")
-            print(f"   💾 CUDA Version: {torch.version.cuda}")
-        
-        return version_ok
-        
-    except ImportError:
-        print_status("PyTorch", False, "Install with: pip install torch")
-        return False
+    return all_installed
 
 
 def check_directory_structure():
@@ -118,8 +66,7 @@ def check_directory_structure():
     print_header("Checking Directory Structure")
     
     required_dirs = [
-        'data/raw',
-        'data/processed',
+        'data/weedsgalore',
         'models/checkpoints',
         'experiments/results',
         'experiments/results/plots',
@@ -130,144 +77,214 @@ def check_directory_structure():
     ]
     
     project_root = Path(__file__).parent
-    all_ok = True
+    all_exist = True
     
     for dir_path in required_dirs:
-        full_path = project_root / dir_path
-        exists = full_path.exists()
-        print_status(f"Directory: {dir_path}", exists)
-        all_ok = all_ok and exists
+        dir_full = project_root / dir_path
+        if dir_full.exists():
+            print(f"✅ {dir_path}")
+        else:
+            print(f"❌ {dir_path} (missing)")
+            all_exist = False
     
-    return all_ok
-
-
-def check_required_files():
-    """Check if required files exist"""
-    print_header("Checking Required Files")
-    
-    required_files = [
-        'requirements.txt',
-        'README.md',
-        'QUICKSTART.md',
-        '.gitignore',
-        'src/simulation/diloco_trainer.py',
-        'src/simulation/download_dataset.py',
-        'experiments/config.yaml',
-        'notebooks/analysis_template.ipynb'
-    ]
-    
-    project_root = Path(__file__).parent
-    all_ok = True
-    
-    for file_path in required_files:
-        full_path = project_root / file_path
-        exists = full_path.exists()
-        print_status(f"File: {file_path}", exists)
-        all_ok = all_ok and exists
-    
-    return all_ok
+    return all_exist
 
 
 def check_dataset():
-    """Check if dataset is available"""
-    print_header("Checking Dataset")
+    """Check if WeedsGalore dataset is available"""
+    print_header("Checking WeedsGalore Dataset")
     
     project_root = Path(__file__).parent
-    dataset_dir = project_root / 'data' / 'raw' / 'weedsgalore'
+    dataset_dir = project_root / 'data' / 'weedsgalore' / 'weedsgalore-dataset'
     
-    exists = dataset_dir.exists()
-    print_status(
-        "WeedsGalore Dataset",
-        exists,
-        "Run: python src/simulation/download_dataset.py --dataset weedsgalore"
-    )
+    if not dataset_dir.exists():
+        print(f"❌ Dataset not found at: {dataset_dir}")
+        print("   Run: python src/simulation/download_dataset.py --dataset weedsgalore")
+        return False
     
-    if exists:
-        # Count files
-        image_count = len(list(dataset_dir.glob('**/*.jpg'))) + len(list(dataset_dir.glob('**/*.png')))
-        print(f"   📊 Found {image_count} images")
+    # Check for required subdirectories
+    required = ['splits']
+    split_files = ['train.txt', 'val.txt', 'test.txt']
     
-    return True  # Dataset is optional for initial testing
+    all_ok = True
+    for req in required:
+        req_path = dataset_dir / req
+        if req_path.exists():
+            print(f"✅ {req}/ directory exists")
+            
+            # Check for split files
+            for split_file in split_files:
+                if (req_path / split_file).exists():
+                    print(f"   ✅ {split_file}")
+                else:
+                    print(f"   ❌ Missing {split_file}")
+                    all_ok = False
+        else:
+            print(f"❌ Missing {req}/ directory")
+            all_ok = False
+    
+    # Check for at least one date folder
+    date_folders = [d for d in dataset_dir.iterdir() 
+                   if d.is_dir() and d.name.startswith('2023-')]
+    
+    if date_folders:
+        print(f"✅ Found {len(date_folders)} date folders")
+        for folder in date_folders[:3]:  # Show first 3
+            print(f"   - {folder.name}")
+        if len(date_folders) > 3:
+            print(f"   ... and {len(date_folders) - 3} more")
+    else:
+        print("❌ No date folders found (should have 2023-05-25, etc.)")
+        all_ok = False
+    
+    return all_ok
+
+
+def check_model_files():
+    """Check if required model files exist"""
+    print_header("Checking Model Files")
+    
+    project_root = Path(__file__).parent
+    yolo_model = project_root / 'yolo11n-cls.pt'
+    
+    if yolo_model.exists():
+        print(f"✅ YOLOv11 classification model found")
+        size_mb = yolo_model.stat().st_size / (1024 * 1024)
+        print(f"   Size: {size_mb:.1f} MB")
+        return True
+    else:
+        print(f"❌ YOLOv11 model not found at: {yolo_model}")
+        print("   Download with: wget https://github.com/ultralytics/assets/releases/download/v8.1.0/yolo11n-cls.pt")
+        return False
+
+
+def check_gpu_availability():
+    """Check if CUDA is available"""
+    print_header("Checking GPU Availability")
+    
+    try:
+        import torch
+        if torch.cuda.is_available():
+            gpu_name = torch.cuda.get_device_name(0)
+            gpu_memory = torch.cuda.get_device_properties(0).total_memory / 1e9
+            print(f"✅ GPU available: {gpu_name}")
+            print(f"   Memory: {gpu_memory:.1f} GB")
+            return True
+        else:
+            print("⚠️  No GPU detected. Training will use CPU (slower)")
+            return False
+    except ImportError:
+        print("❌ torch not installed")
+        return False
+
+
+def test_imports():
+    """Test if key imports work"""
+    print_header("Testing Imports")
+    
+    imports_to_test = [
+        ('src.simulation.weedsgalore_loader', 'WeedsGaloreDataset'),
+        ('src.simulation.diloco_trainer', 'DiLoCoCoordinator'),
+    ]
+    
+    all_ok = True
+    for module_path, obj_name in imports_to_test:
+        try:
+            module = importlib.import_module(module_path)
+            if hasattr(module, obj_name):
+                print(f"✅ {module_path}.{obj_name}")
+            else:
+                print(f"❌ {obj_name} not found in {module_path}")
+                all_ok = False
+        except ImportError as e:
+            print(f"❌ Failed to import {module_path}: {e}")
+            all_ok = False
+    
+    return all_ok
 
 
 def run_quick_test():
-    """Run a quick import test of main modules"""
-    print_header("Quick Module Import Test")
+    """Run a quick test of the data loader"""
+    print_header("Running Quick Test")
     
     try:
-        # Try importing the main simulation module
-        sys.path.insert(0, str(Path(__file__).parent / 'src'))
+        from src.simulation.weedsgalore_loader import create_weedsgalore_loaders
         
-        print("   Importing diloco_trainer...")
-        # Just check if file can be read, don't actually import to avoid running code
-        trainer_file = Path(__file__).parent / 'src' / 'simulation' / 'diloco_trainer.py'
+        print("Testing WeedsGalore data loader...")
+        train_loader, val_loader, test_loader = create_weedsgalore_loaders(batch_size=2)
         
-        if trainer_file.exists():
-            print_status("diloco_trainer.py", True)
-            return True
-        else:
-            print_status("diloco_trainer.py", False, "File not found")
-            return False
-            
+        print(f"✅ Train loader created: {len(train_loader.dataset)} samples")
+        print(f"✅ Val loader created: {len(val_loader.dataset)} samples")
+        print(f"✅ Test loader created: {len(test_loader.dataset)} samples")
+        
+        # Try to get one batch
+        for batch_idx, (images, labels) in enumerate(train_loader):
+            if batch_idx == 0:
+                print(f"✅ Batch shape: {images.shape}")
+                print(f"✅ Labels: {labels.tolist()}")
+                print(f"✅ Data types: images={images.dtype}, labels={labels.dtype}")
+                break
+        
+        print("✅ All tests passed!")
+        return True
+        
     except Exception as e:
-        print_status("Module Import", False, str(e))
+        print(f"❌ Test failed: {e}")
+        import traceback
+        traceback.print_exc()
         return False
 
 
 def main():
-    """Main verification workflow"""
-    print("\n" + "="*60)
-    print("  TaniFi Environment Verification")
-    print("  Checking if your setup is ready for Week 1...")
-    print("="*60)
+    """Main verification function"""
+    print("\n" + "=" * 60)
+    print("TaniFi Environment Verification")
+    print("=" * 60)
     
     checks = [
-        ("Python Version", check_python_version),
-        ("Dependencies", check_dependencies),
-        ("PyTorch & CUDA", check_pytorch_cuda),
-        ("Directory Structure", check_directory_structure),
-        ("Required Files", check_required_files),
-        ("Dataset (Optional)", check_dataset),
-        ("Module Import", run_quick_test),
+        ('Python Version', check_python_version),
+        ('Required Packages', check_required_packages),
+        ('Directory Structure', check_directory_structure),
+        ('WeedsGalore Dataset', check_dataset),
+        ('Model Files', check_model_files),
+        ('GPU Availability', check_gpu_availability),
+        ('Module Imports', test_imports),
+        ('Quick Loader Test', run_quick_test),
     ]
     
-    results = {}
+    results = []
     for check_name, check_func in checks:
         try:
-            results[check_name] = check_func()
+            result = check_func()
+            results.append((check_name, result))
         except Exception as e:
-            print(f"\n❌ Error during {check_name}: {str(e)}")
-            results[check_name] = False
+            print(f"❌ Error in {check_name}: {e}")
+            results.append((check_name, False))
     
-    # Summary
     print_header("Verification Summary")
     
-    total_checks = len([r for r in results.values() if r is not None])
-    passed_checks = sum(1 for r in results.values() if r is True)
+    passed = sum(1 for _, result in results if result)
+    total = len(results)
     
-    print(f"Total Checks: {total_checks}")
-    print(f"Passed: {passed_checks}")
-    print(f"Failed: {total_checks - passed_checks}")
+    for check_name, result in results:
+        status = "✅ PASS" if result else "❌ FAIL"
+        print(f"{status}: {check_name}")
     
-    print(f"\nOverall Status: ", end="")
-    if passed_checks == total_checks:
-        print("✅ ALL CHECKS PASSED! You're ready to go!")
-        print("\nNext steps:")
-        print("1. Run simulation: cd src/simulation && python diloco_trainer.py")
-        print("2. Check QUICKSTART.md for detailed instructions")
-        return 0
-    elif passed_checks >= total_checks * 0.8:
-        print("⚠️  MOSTLY READY (minor issues)")
-        print("\nYou can proceed, but fix the failed checks when possible.")
-        print("Check QUICKSTART.md for troubleshooting.")
+    print(f"\n{'=' * 60}")
+    print(f"Overall: {passed}/{total} checks passed ({passed/total*100:.1f}%)")
+    
+    if passed == total:
+        print("✅ All checks passed! You're ready to start experiments.")
         return 0
     else:
-        print("❌ SETUP INCOMPLETE")
-        print("\nPlease fix the failed checks before proceeding.")
-        print("See QUICKSTART.md for installation instructions.")
+        print("⚠️  Some checks failed. Please fix the issues above.")
+        print("\nSuggested fixes:")
+        print("1. Install missing packages: pip install -r requirements.txt")
+        print("2. Download dataset: python src/simulation/download_dataset.py --dataset weedsgalore")
+        print("3. Download model: wget https://github.com/ultralytics/assets/releases/download/v8.1.0/yolo11n-cls.pt")
+        print("4. Create missing directories manually")
         return 1
 
 
-if __name__ == '__main__':
-    exit_code = main()
-    sys.exit(exit_code)
+if __name__ == "__main__":
+    sys.exit(main())
