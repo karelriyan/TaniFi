@@ -1,0 +1,124 @@
+{
+  "config": {
+    "model": {
+      "name": "YOLOv11ClassificationModel",
+      "num_classes": 3,
+      "lora_rank": 4
+    },
+    "dataset": {
+      "name": "weedsgalore",
+      "path": "../data/raw/weedsgalore",
+      "processed_path": "../data/processed/weedsgalore",
+      "image_size": 224,
+      "train_split": 0.8,
+      "val_split": 0.1,
+      "test_split": 0.1
+    },
+    "federated": {
+      "num_farmers": 2,
+      "local_steps": 5,
+      "num_rounds": 2,
+      "non_iid": true,
+      "min_samples_per_farmer": 10,
+      "max_samples_per_farmer": 150,
+      "checkpoint_rounds": [
+        5,
+        10
+      ],
+      "aggregation_method": "fedavg"
+    },
+    "training": {
+      "batch_size": 8,
+      "learning_rate": 0.001,
+      "optimizer": "adamw",
+      "weight_decay": 0.0001,
+      "use_scheduler": true,
+      "scheduler_type": "cosine"
+    },
+    "device": {
+      "use_gpu": true,
+      "gpu_id": 0,
+      "num_workers": 4
+    },
+    "simulation": {
+      "simulate_network_delay": false,
+      "avg_sync_delay_seconds": 10,
+      "simulate_memory_constraint": false,
+      "max_memory_mb": 2048,
+      "simulate_intermittent_connectivity": false,
+      "connectivity_probability": 0.8
+    },
+    "blockchain": {
+      "enabled": false,
+      "network": "base-sepolia",
+      "contract_address": null,
+      "proof_of_learning": true
+    },
+    "logging": {
+      "level": "INFO",
+      "tensorboard": true,
+      "wandb": false,
+      "save_checkpoints": true,
+      "checkpoint_frequency": 2
+    },
+    "output": {
+      "results_dir": "../experiments/results",
+      "checkpoints_dir": "../models/checkpoints",
+      "logs_dir": "../experiments/logs",
+      "plots_dir": "../experiments/results/plots"
+    },
+    "experiment": {
+      "name": "diloco_baseline",
+      "tags": [
+        "diloco",
+        "federated-learning",
+        "agriculture",
+        "indonesia"
+      ],
+      "description": "Baseline DiLoCo simulation for TaniFi research paper"
+    },
+    "metrics": {
+      "track_bandwidth_savings": true,
+      "track_convergence_rate": true,
+      "track_per_farmer_contribution": true,
+      "track_model_accuracy": true,
+      "compare_with_centralized": true
+    },
+    "num_farmers": 2,
+    "local_steps": 5,
+    "total_rounds": 2,
+    "warmup_rounds": 5
+  },
+  "metrics": {
+    "rounds": [
+      0,
+      1
+    ],
+    "avg_loss": [
+      1.199863749742508,
+      1.1948294162750244
+    ],
+    "bandwidth_saved": [
+      99.24922489180408,
+      99.24922489180408
+    ],
+    "val_loss": [
+      0.9588615894317627,
+      0.722579836845398
+    ],
+    "val_accuracy": [
+      0.8076923076923077,
+      0.8076923076923077
+    ],
+    "val_f1_macro": [
+      0.44680851063829785,
+      0.44680851063829785
+    ],
+    "vram_mb": [
+      100.396484375,
+      166.408203125
+    ]
+  },
+  "timestamp": "20260218_123448",
+  "training_type": "federated_diLoCo"
+}

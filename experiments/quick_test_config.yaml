@@ -1,0 +1,20 @@
+
+num_farmers: 5
+total_rounds: 1
+local_steps: 5
+batch_size: 4
+img_size: 64
+learning_rate: 0.001
+checkpoints_dir: checkpoints/
+save_plots: false
+
+federated:
+  num_farmers: 5
+  num_rounds: 1
+  local_steps: 5
+  warmup_rounds: 0
+  non_iid: true
+
+dataset:
+  name: weedsgalore
+  image_size: 64

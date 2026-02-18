@@ -69,3 +69,4 @@ artifacts/
 .aider*
 .claude/
 .roomodes
+data/archive

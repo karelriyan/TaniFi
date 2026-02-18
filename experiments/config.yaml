@@ -18,9 +18,9 @@ dataset:
 
 # Federated Learning Configuration
 federated:
-  num_farmers: 5    # Number of farmer nodes to simulate
-  local_steps: 25   # Local training steps before sync
-  num_rounds: 5     # Total federated rounds
+  num_farmers: 2    # Number of farmer nodes to simulate
+  local_steps: 5   # Local training steps before sync
+  num_rounds: 2     # Total federated rounds
   
   # Data distribution
   non_iid: true     # Non-IID data distribution (realistic)

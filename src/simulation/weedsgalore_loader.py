@@ -27,6 +27,7 @@ from collections import Counter
 from torch.utils.data import Dataset
 from PIL import Image
 import numpy as np
+from .image_filters import check_image_quality
 
 NUM_CLASSES = 3
 
@@ -62,16 +63,18 @@ class WeedsGaloreDataset(Dataset):
             └── test.txt
     """
 
-    def __init__(self, root_dir, split='train', transform=None):
+    def __init__(self, root_dir, split='train', transform=None, filter_data=True):
         """
         Args:
             root_dir: Path to weedsgalore-dataset/
             split: 'train', 'val', or 'test'
             transform: Optional transform
+            filter_data: Whether to apply quality filtering on images.
         """
         self.root_dir = Path(root_dir)
         self.split = split
         self.transform = transform
+        self.filter_data = filter_data
 
         # Load split file
         split_file = self.root_dir / 'splits' / f'{split}.txt'
@@ -84,12 +87,43 @@ class WeedsGaloreDataset(Dataset):
             if d.is_dir() and d.name.startswith('2023-')
         ])
 
-        # Pre-compute labels from semantic masks
-        self.labels = self._compute_labels()
+        # Statistics for filtering
+        self.accepted_count = 0
+        self.rejected_count = 0
+
+        # If filtering is enabled, validate each image using the quality filter
+        if self.filter_data:
+            valid_ids = []
+            valid_labels = []
+            # Compute labels once for all images
+            all_labels = self._compute_labels()
+            for img_id, label in zip(self.image_ids, all_labels):
+                pil_img = self._load_rgb_image(img_id)
+                if pil_img is None:
+                    self.rejected_count += 1
+                    continue
+                
+                # Convert PIL (RGB) to OpenCV (BGR) for checking
+                img_bgr = np.array(pil_img)[:, :, ::-1]
+                is_valid, _ = check_image_quality(img_bgr)
+                
+                if is_valid:
+                    valid_ids.append(img_id)
+                    valid_labels.append(label)
+                    self.accepted_count += 1
+                else:
+                    self.rejected_count += 1
+            self.image_ids = valid_ids
+            self.labels = valid_labels
+        else:
+            # No filtering; compute labels once
+            self.labels = self._compute_labels()
+
         self.num_classes = NUM_CLASSES
 
         label_dist = Counter(self.labels)
-        print(f"[{split}] {len(self.image_ids)} images, "
+        print(f"[{split.upper()}] {len(self.image_ids)} images after QC, "
+              f"accepted: {self.accepted_count}, rejected: {self.rejected_count}, "
               f"label distribution: {dict(sorted(label_dist.items()))}")
 
     def _find_date_folder(self, image_id):
@@ -142,6 +176,26 @@ class WeedsGaloreDataset(Dataset):
             return date_folder / 'images'
         return None
 
+    def _find_image_path(self, image_id):
+        """Return the filesystem path to the RGB image for *image_id*.
+
+        Handles both combined image files and separate channel files.
+        """
+        img_folder = self._find_image_folder(image_id)
+        if img_folder is None:
+            return None
+        # Prefer combined image if exists
+        combined = img_folder / f"{image_id}.png"
+        if combined.exists():
+            return combined
+        # Otherwise check for separate channel files
+        r_path = img_folder / f"{image_id}_R.png"
+        g_path = img_folder / f"{image_id}_G.png"
+        b_path = img_folder / f"{image_id}_B.png"
+        if r_path.exists() and g_path.exists() and b_path.exists():
+            return r_path
+        return None
+
     def _load_rgb_image(self, image_id):
         """
         Load RGB image from multispectral channels.
@@ -167,9 +221,18 @@ class WeedsGaloreDataset(Dataset):
                 return Image.open(single_path).convert('RGB')
             return None
 
-        r_channel = np.array(Image.open(r_path).convert('L'))
-        g_channel = np.array(Image.open(g_path).convert('L'))
-        b_channel = np.array(Image.open(b_path).convert('L'))
+        r_img = Image.open(r_path)
+        def load_channel(path):
+            img = Image.open(path)
+            if img.mode == 'I;16':
+                arr = np.array(img)
+                # Scale 16-bit (0-65535) to 8-bit (0-255)
+                return (arr / 257).astype(np.uint8)
+            return np.array(img.convert('L'))
+
+        r_channel = load_channel(r_path)
+        g_channel = load_channel(g_path)
+        b_channel = load_channel(b_path)
 
         rgb_array = np.stack([r_channel, g_channel, b_channel], axis=-1)
         return Image.fromarray(rgb_array, mode='RGB')
@@ -231,9 +294,9 @@ def create_weedsgalore_loaders(batch_size=8, img_size=224, oversample_minority=F
                              std=[0.229, 0.224, 0.225])
     ])
 
-    train_dataset = WeedsGaloreDataset(root, 'train', train_transform)
-    val_dataset = WeedsGaloreDataset(root, 'val', eval_transform)
-    test_dataset = WeedsGaloreDataset(root, 'test', eval_transform)
+    train_dataset = WeedsGaloreDataset(root, 'train', train_transform, filter_data=True)
+    val_dataset = WeedsGaloreDataset(root, 'val', eval_transform, filter_data=True)
+    test_dataset = WeedsGaloreDataset(root, 'test', eval_transform, filter_data=True)
 
     if oversample_minority:
         class_counts = np.bincount(train_dataset.labels, minlength=NUM_CLASSES)

@@ -1,0 +1,49 @@
+{
+  "config": {
+    "num_farmers": 5,
+    "total_rounds": 1,
+    "local_steps": 5,
+    "batch_size": 4,
+    "img_size": 64,
+    "learning_rate": 0.001,
+    "checkpoints_dir": "checkpoints/",
+    "save_plots": false,
+    "federated": {
+      "num_farmers": 5,
+      "num_rounds": 1,
+      "local_steps": 5,
+      "warmup_rounds": 0,
+      "non_iid": true
+    },
+    "dataset": {
+      "name": "weedsgalore",
+      "image_size": 64
+    },
+    "warmup_rounds": 0
+  },
+  "metrics": {
+    "rounds": [
+      0
+    ],
+    "avg_loss": [
+      1.3905196237564088
+    ],
+    "bandwidth_saved": [
+      99.24922489180408
+    ],
+    "val_loss": [
+      1.5094724893569946
+    ],
+    "val_accuracy": [
+      0.20833333333333334
+    ],
+    "val_f1_macro": [
+      0.18219461697722564
+    ],
+    "vram_mb": [
+      74.21240234375
+    ]
+  },
+  "timestamp": "20260218_131701",
+  "training_type": "federated_diLoCo"
+}

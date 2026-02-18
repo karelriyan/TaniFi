@@ -1,0 +1,41 @@
+{
+  "config": {
+    "num_farmers": 5,
+    "local_steps": 10,
+    "total_rounds": 2,
+    "warmup_rounds": 1,
+    "batch_size": 8,
+    "num_epochs_baseline": 1,
+    "dataset": {
+      "name": "plantvillage",
+      "image_size": 224
+    }
+  },
+  "history": {
+    "train_loss": [
+      0.6558118149515597
+    ],
+    "train_acc": [
+      0.8247916378873693
+    ],
+    "train_f1": [
+      0.7786281036201458
+    ],
+    "val_loss": [
+      0.2748123521870212
+    ],
+    "val_acc": [
+      0.918401178854301
+    ],
+    "val_f1": [
+      0.8871785307810685
+    ]
+  },
+  "test_metrics": {
+    "loss": 0.28387394199545246,
+    "accuracy": 0.9176795580110497,
+    "f1_macro": 0.8870798833185295
+  },
+  "timestamp": "20260218_135705",
+  "training_type": "centralized_baseline"
+}
