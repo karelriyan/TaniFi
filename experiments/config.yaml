@@ -62,12 +62,6 @@ simulation:
   simulate_intermittent_connectivity: false
   connectivity_probability: 0.8  # 80% chance of successful sync
 
-# Blockchain Integration (Future)
-blockchain:
-  enabled: false
-  network: "base-sepolia"  # Base L2 testnet
-  contract_address: null
-  proof_of_learning: true
 
 # Logging and Monitoring
 logging:

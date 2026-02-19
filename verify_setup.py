@@ -145,7 +145,7 @@ def check_model_files():
     print_header("Checking Model Files")
     
     project_root = Path(__file__).parent
-    yolo_model = project_root / 'yolo11n-cls.pt'
+    yolo_model = project_root / 'yolo11s-cls.pt'
     
     if yolo_model.exists():
         print(f"✅ YOLOv11 classification model found")
@@ -154,7 +154,7 @@ def check_model_files():
         return True
     else:
         print(f"❌ YOLOv11 model not found at: {yolo_model}")
-        print("   Download with: wget https://github.com/ultralytics/assets/releases/download/v8.1.0/yolo11n-cls.pt")
+        print("   Download with: wget https://github.com/ultralytics/assets/releases/download/v8.1.0/yolo11s-cls.pt")
         return False
 
 
@@ -281,7 +281,7 @@ def main():
         print("\nSuggested fixes:")
         print("1. Install missing packages: pip install -r requirements.txt")
         print("2. Download dataset: python src/simulation/download_dataset.py --dataset weedsgalore")
-        print("3. Download model: wget https://github.com/ultralytics/assets/releases/download/v8.1.0/yolo11n-cls.pt")
+        print("3. Download model: wget https://github.com/ultralytics/assets/releases/download/v8.1.0/yolo11s-cls.pt")
         print("4. Create missing directories manually")
         return 1
 

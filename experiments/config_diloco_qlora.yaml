@@ -1,12 +1,6 @@
 # QLoRA DiLoCo experiment configuration
 # Generated automatically
 
-blockchain:
-  enabled: false
-  network: base-sepolia
-  contract_address: null
-  proof_of_learning: true
-
 dataset:
   name: weedsgalore
   path: ../data/raw/weedsgalore

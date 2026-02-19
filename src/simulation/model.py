@@ -3,7 +3,7 @@ import torch.nn as nn
 
 class YOLOv11ClassificationModel(nn.Module):
     """
-    YOLOv11 Nano classification model wrapper for federated learning.
+    YOLOv11 Small classification model wrapper for federated learning.
     Uses pretrained ImageNet backbone with custom classification head.
     Exposes .features and .classifier for LoRA adapter insertion.
     """
@@ -11,7 +11,7 @@ class YOLOv11ClassificationModel(nn.Module):
         super().__init__()
         from ultralytics import YOLO
 
-        yolo = YOLO('yolo11n-cls.pt')
+        yolo = YOLO('yolo11s-cls.pt')
         yolo_model = yolo.model.model  # nn.Sequential of YOLO layers
 
         # Backbone: layers 0‑9 (Conv, C3k2, C2PSA blocks)

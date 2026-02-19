@@ -18,7 +18,8 @@ def parse_args():
     parser.add_argument("--config", type=str, help="Path to a YAML configuration file")
     parser.add_argument("--centralized", action="store_true", help="Run centralized baseline instead of federated training")
     parser.add_argument("--real-data", action="store_true", help="Use the real WeedsGalore dataset; otherwise synthetic data is used")
-    parser.add_argument("--no-plots", dest="save_plots", action="store_false", help="Disable saving training plots")
+    parser.add_argument("--dummy-data", action="store_true", help="Use synthetic data (explicit flag)")
+    parser.add_argument("--adapter-type", type=str, choices=['lora', 'qlora'], help="Adapter type: 'lora' or 'qlora'")
     parser.set_defaults(save_plots=True)
     return parser.parse_args()
 
@@ -30,4 +31,5 @@ if __name__ == "__main__":
         centralized=args.centralized,
         real_data=args.real_data,
         save_plots=args.save_plots,
+        adapter_type=args.adapter_type,
     )

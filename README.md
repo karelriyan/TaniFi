@@ -5,7 +5,7 @@
 
 ## 🌱 Digital Farming Revolution on the Edge
 
-TaniFi is a research project simulating federated learning architectures for bandwidth-constrained agricultural networks, specifically designed for Indonesian agricultural 4.0 environments. This project implements the DiLoCo (Distributed Low-Communication) protocol to enable efficient AI model training across distributed farm nodes with limited connectivity.
+TaniFi (Tani Federated Intelligence) is a research project simulating federated learning architectures for bandwidth-constrained agricultural networks, specifically designed for Indonesian agricultural 4.0 environments. This project implements the DiLoCo (Distributed Low-Communication) protocol to enable efficient AI model training across distributed farm nodes with limited connectivity.
 
 ## 📚 Table of Contents
 - [Key Features](#-key-features)
@@ -76,7 +76,7 @@ pip install -r requirements.txt
 python verify_setup.py
 ```
 
-The YOLOv11 model (`yolo11n-cls.pt`) will be automatically downloaded on first run.
+The YOLOv11 model (`yolo11s-cls.pt`) will be automatically downloaded on first run.
 
 ## ⚠️ Dataset Setup
 
@@ -107,6 +107,25 @@ data/weedsgalore/weedsgalore-dataset/
 ```bash
 ls -la data/weedsgalore/weedsgalore-dataset/
 # Should show date folders and splits/
+```
+
+### PlantVillage Dataset
+The project also supports the PlantVillage dataset for disease classification.
+
+**Structure:**
+```
+data/archive/PlantVillage_for_object_detection/Dataset/
+├── images/       # All images
+├── labels/       # YOLO format labels (.txt)
+└── classes.yaml  # Class names
+```
+
+**Configuration:**
+To use PlantVillage, update your config file:
+```yaml
+dataset:
+  name: plantvillage
+  image_size: 224 # Recommended size
 ```
 
 ## 🚀 Running Experiments
@@ -171,7 +190,9 @@ TaniFi/
 │
 ├── src/simulation/             # Core simulation code
 │   ├── diloco_trainer.py       # Main training coordinator
-│   └── weedsgalore_loader.py   # Dataset loader
+│   ├── weedsgalore_loader.py   # WeedsGalore loader
+│   ├── plantvillage_loader.py  # PlantVillage loader
+│   └── image_filters.py        # Quality control filters
 │
 ├── .gitignore                  # Git ignore rules
 ├── LICENSE                     # MIT License

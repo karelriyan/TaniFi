@@ -1,0 +1,26 @@
+{
+  "timestamp": "2026-02-20T04:04:33.431904",
+  "dataset_type": "dummy",
+  "total_experiments": 2,
+  "successful": 0,
+  "failed": 2,
+  "total_duration_minutes": 0.48140071233113607,
+  "results": [
+    {
+      "config": "centralized_baseline",
+      "success": false,
+      "duration": 12.89918565750122,
+      "duration_minutes": 0.21498642762502035
+    },
+    {
+      "config": "config_10f_20r_500s.yaml",
+      "config_info": "10f/20r/500s",
+      "dataset": "dummy",
+      "success": false,
+      "error": "Timeout after 15s",
+      "duration": 15.984857082366943,
+      "duration_minutes": 0.2664142847061157,
+      "skipped": true
+    }
+  ]
+}

@@ -8,7 +8,11 @@ This document provides a concise description of each module in the `src/simulati
 | `model.py` | Defines the `YOLOv11ClassificationModel` class, a wrapper around the YOLOv11‑Nano backbone with a custom classification head. This model is used for both centralized and federated training. |
 | `data.py` | Supplies dataset creation utilities:
 - `create_weedsgalore_dataset` builds a real dataset from the WeedsGalore images with appropriate augmentations.
-- `create_dataset` decides whether to use the real dataset or a synthetic `FakeData` fallback, exposing a unified interface for the rest of the code. |
+- `create_plantvillage_dataset` builds the PlantVillage dataset with standard preprocessing.
+- `create_dataset` acts as a unified factory to create either WeedsGalore, PlantVillage, or synthetic datasets based on configuration. |
+| `weedsgalore_loader.py` | Handles the date-based folder structure and semantic mask processing for the WeedsGalore dataset. Includes logic for channel merging and label derivation. |
+| `plantvillage_loader.py` | Handles the PlantVillage dataset structure. Supports YOLO-format labels and standard train/val/test splits. |
+| `image_filters.py` | Implementation of quality control checks for images. Detects blur (Laplacian variance) and verifies plant content (green pixel ratio) to filter out poor quality data during loading. |
 | `evaluation.py` | Implements evaluation helpers:
 - `evaluate_model` runs inference on a dataloader and returns loss, accuracy, and macro‑F1.
 - `compute_class_weights` calculates inverse‑frequency class weights for weighted loss functions. |

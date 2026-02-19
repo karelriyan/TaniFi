@@ -1,15 +1,11 @@
 # Auto-generated config for TaniFi DiLoCo experiment
-# Generated: 2026-02-09T11:33:44.912048
+# Generated: 2026-02-20T03:56:19.548732
 # Parameters: 10 farmers, 20 rounds, 500 local steps
 #
 # To run this experiment:
 #   python run_diloco.py --config config_10f_20r_500s.yaml
 
-blockchain:
-  contract_address: null
-  enabled: false
-  network: base-sepolia
-  proof_of_learning: true
+
 dataset:
   image_size: 224
   name: weedsgalore

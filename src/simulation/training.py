@@ -25,13 +25,23 @@ from .farmer import FarmerNode
 from .coordinator import DiLoCoCoordinator
 from .utils import FAST_MODE
 
+
+from .adapters import AdapterFactory
+
 def train_centralized_baseline(model, train_dataset, val_dataset, test_dataset,
-                               num_epochs=10, batch_size=32, device='cpu'):
+                               num_epochs=10, batch_size=32, device='cpu',
+                               adapter_type=None, adapter_config=None):
     """Centralized baseline training for comparison."""
     print(f"\n{'='*60}")
     print(f"Centralized Baseline Training")
+    if adapter_type:
+        print(f"Adapter Type: {adapter_type}")
     print(f"{'='*60}")
 
+    if adapter_type:
+        print(f"Wrapping model with {adapter_type} adapter...")
+        model = AdapterFactory.create_adapter(model, adapter_type=adapter_type, config=adapter_config).to(device)
+        
     train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
     val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
     test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
@@ -39,7 +49,10 @@ def train_centralized_baseline(model, train_dataset, val_dataset, test_dataset,
     # Compute class weights for weighted loss
     class_weights = compute_class_weights(train_dataset)
     criterion = nn.CrossEntropyLoss(weight=class_weights.to(device))
-    optimizer = optim.AdamW(model.parameters(), lr=0.001, weight_decay=0.0001)
+    
+    # Optimize only trainable parameters
+    trainable_params = [p for p in model.parameters() if p.requires_grad]
+    optimizer = optim.AdamW(trainable_params, lr=0.001, weight_decay=0.0001)
     scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=num_epochs)
 
     history = {
@@ -111,7 +124,7 @@ def train_centralized_baseline(model, train_dataset, val_dataset, test_dataset,
 
     return history, {'loss': test_loss, 'accuracy': test_acc, 'f1_macro': test_f1}
 
-def main_training(config_file=None, centralized=False, real_data=True, save_plots=True):
+def main_training(config_file=None, centralized=False, real_data=True, save_plots=True, adapter_type=None):
     """Main training function – orchestrates dataset creation, model init, and training."""
     import yaml
     import argparse
@@ -143,6 +156,11 @@ def main_training(config_file=None, centralized=False, real_data=True, save_plot
     config['local_steps'] = federated_cfg.get('local_steps', config.get('local_steps', 100))
     config['total_rounds'] = federated_cfg.get('num_rounds', config.get('total_rounds', 20))
     config['warmup_rounds'] = federated_cfg.get('warmup_rounds', config.get('warmup_rounds', 5))
+    
+    # Determine adapter type: CLI arg > config > default 'lora'
+    if adapter_type is None:
+        adapter_type = config.get('adapter_type', 'lora')
+    
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     print(f"Using device: {device}")
 
@@ -186,8 +204,10 @@ def main_training(config_file=None, centralized=False, real_data=True, save_plot
         history, test_metrics = train_centralized_baseline(
             model, train_dataset, val_dataset, test_dataset,
             num_epochs=config.get('num_epochs_baseline', 10),
-            batch_size=config['batch_size'],
-            device=device
+            batch_size=config.get('batch_size', 32),
+            device=device,
+            adapter_type=adapter_type,
+            adapter_config=config.get('adapter_config', {})
         )
         # Save results
         results_dir = Path(__file__).parent.parent / 'experiments' / 'results'
@@ -199,6 +219,7 @@ def main_training(config_file=None, centralized=False, real_data=True, save_plot
             'test_metrics': test_metrics,
             'timestamp': timestamp,
             'training_type': 'centralized_baseline',
+            'adapter_type': adapter_type,
         }
         json_path = results_dir / f'centralized_baseline_{timestamp}.json'
         with open(json_path, 'w') as f:
@@ -235,8 +256,8 @@ def main_training(config_file=None, centralized=False, real_data=True, save_plot
             num_farmers=config.get('num_farmers', 10),
             local_steps=config.get('local_steps', 100),
             device=device,
-            adapter_type='lora',
-            adapter_config={},
+            adapter_type=adapter_type,
+            adapter_config=config.get('adapter_config', {}),
             outer_lr=1.0,
             mu=0.9,
         )
@@ -258,6 +279,7 @@ def main_training(config_file=None, centralized=False, real_data=True, save_plot
             'metrics': metrics,
             'timestamp': timestamp,
             'training_type': 'federated_diLoCo',
+            'adapter_type': adapter_type,
         }
         json_path = results_dir / f'federated_diLoCo_{timestamp}.json'
         with open(json_path, 'w') as f:

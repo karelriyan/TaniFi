@@ -67,13 +67,17 @@ class AdapterFactory:
             for name, child in list(module.named_children()):
                 if isinstance(child, nn.Linear):
                     new_linear = bnb.nn.Linear4bit(
-                        in_features=child.in_features,
-                        out_features=child.out_features,
+                        child.in_features,
+                        child.out_features,
                         bias=child.bias is not None,
                         compute_dtype=torch.float16,
                         quant_type="nf4",
                     )
-                    new_linear.weight = child.weight
+                    new_linear.weight = bnb.nn.Params4bit(
+                        child.weight.data,
+                        requires_grad=False,
+                        quant_type="nf4"
+                    )
                     if child.bias is not None:
                         new_linear.bias = child.bias
                     setattr(module, name, new_linear)
@@ -85,12 +89,11 @@ class AdapterFactory:
         peft_config = LoraConfig(
             r=config.get("r", 4),
             lora_alpha=config.get("lora_alpha", 32),
-            target_modules=config.get("target_modules", ["classifier"]),
+            target_modules=config.get("target_modules", ["classifier.2"]),
             lora_dropout=config.get("lora_dropout", 0.05),
-            task_type="IMAGE_CLS",
-            quantized=True,
         )
-        return get_peft_model(base_model, peft_config)
+        peft_model = get_peft_model(base_model, peft_config)
+        return QLoRAAdapter(peft_model)
 
 
 class LoRAAdapter(nn.Module):

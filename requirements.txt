@@ -28,11 +28,6 @@ tensorboard>=2.18.0
 wandb>=0.18.0  # Optional: experiment tracking
 plotly>=5.24.0  # Interactive plots
 
-# Blockchain Integration (Base L2)
-web3>=7.4.0  # Latest web3.py
-py-solc-x>=2.0.3
-eth-account>=0.13.0
-eth-typing>=5.0.0
 
 # Utilities
 PyYAML>=6.0.2

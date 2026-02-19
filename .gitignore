@@ -70,3 +70,5 @@ artifacts/
 .claude/
 .roomodes
 data/archive
+.continue
+.roo

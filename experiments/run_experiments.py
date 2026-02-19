@@ -117,7 +117,7 @@ def safe_print(*args, **kwargs):
 
 
 def run_single_experiment(config_path, experiment_index, total_experiments,
-                          timeout_seconds=86400, dataset_type="dummy"):
+                          timeout_seconds=86400, dataset_type="dummy", adapter_type="lora"):
     """
     Run a single experiment and track execution time.
 
@@ -127,6 +127,7 @@ def run_single_experiment(config_path, experiment_index, total_experiments,
         total_experiments: Total number of experiments
         timeout_seconds: Maximum time allowed per experiment
         dataset_type: Dataset to use ("dummy" or "weedsgalore")
+        adapter_type: Adapter type ("lora" or "qlora")
 
     Returns:
         Dict with execution results (success, duration, etc.)
@@ -163,7 +164,7 @@ def run_single_experiment(config_path, experiment_index, total_experiments,
 
         # Build command with dataset flag
         cmd = [
-            'python3',
+            sys.executable,
             'diloco_trainer.py',
             '--config',
             str(config_absolute)
@@ -174,6 +175,11 @@ def run_single_experiment(config_path, experiment_index, total_experiments,
             cmd.append('--real-data')
         else:
             cmd.append('--dummy-data')
+
+        # Add adapter type
+        if adapter_type == 'qlora':
+            cmd.append('--adapter-type')
+            cmd.append('qlora')
 
         # Run diloco_trainer with specified config and dataset
         # Stream output in real-time so user can see progress bars
@@ -296,15 +302,9 @@ def run_single_experiment(config_path, experiment_index, total_experiments,
 
 
 def run_experiments_parallel(config_files, num_workers=2, timeout_seconds=86400,
-                             dataset_type="dummy"):
+                             dataset_type="dummy", adapter_type="lora"):
     """
     Run multiple experiments in parallel.
-
-    Args:
-        config_files: List of config file paths
-        num_workers: Number of parallel workers
-        timeout_seconds: Timeout per experiment
-        dataset_type: Dataset to use for all experiments
     """
     global completed_count, total_count
     completed_count = 0
@@ -315,6 +315,7 @@ def run_experiments_parallel(config_files, num_workers=2, timeout_seconds=86400,
     safe_print(f"#   Total experiments: {len(config_files)}")
     safe_print(f"#   Parallel workers: {num_workers}")
     safe_print(f"#   Dataset: {dataset_type}")
+    safe_print(f"#   Adapter: {adapter_type}")
     safe_print(f"#   Timeout per experiment: {timeout_seconds}s ({timeout_seconds/60:.0f} min)")
     safe_print(f"{'#'*70}\n")
 
@@ -331,7 +332,7 @@ def run_experiments_parallel(config_files, num_workers=2, timeout_seconds=86400,
         future_to_config = {
             executor.submit(
                 run_single_experiment, config, idx + 1, len(config_files),
-                timeout_seconds, dataset_type
+                timeout_seconds, dataset_type, adapter_type
             ): config
             for idx, config in enumerate(config_files)
         }
@@ -355,14 +356,9 @@ def run_experiments_parallel(config_files, num_workers=2, timeout_seconds=86400,
     return results
 
 
-def run_experiments_sequential(config_files, timeout_seconds=86400, dataset_type="dummy"):
+def run_experiments_sequential(config_files, timeout_seconds=86400, dataset_type="dummy", adapter_type="lora"):
     """
     Run experiments one by one.
-
-    Args:
-        config_files: List of config file paths
-        timeout_seconds: Timeout per experiment
-        dataset_type: Dataset to use for all experiments
     """
     global completed_count, total_count
     completed_count = 0
@@ -372,6 +368,7 @@ def run_experiments_sequential(config_files, timeout_seconds=86400, dataset_type
     safe_print(f"# SEQUENTIAL EXECUTION")
     safe_print(f"#   Total experiments: {len(config_files)}")
     safe_print(f"#   Dataset: {dataset_type}")
+    safe_print(f"#   Adapter: {adapter_type}")
     safe_print(f"#   Timeout per experiment: {timeout_seconds}s ({timeout_seconds/60:.0f} min)")
     safe_print(f"{'#'*70}\n")
 
@@ -386,7 +383,7 @@ def run_experiments_sequential(config_files, timeout_seconds=86400, dataset_type
 
     for idx, config_file in enumerate(config_files):
         result = run_single_experiment(
-            config_file, idx + 1, len(config_files), timeout_seconds, dataset_type
+            config_file, idx + 1, len(config_files), timeout_seconds, dataset_type, adapter_type
         )
         results.append(result)
 
@@ -421,14 +418,24 @@ def save_execution_log(results, output_file='execution_log.json', dataset_type="
     return log_data
 
 
-def run_centralized_baseline(timeout_seconds=86400):
+def run_centralized_baseline(timeout_seconds=86400, dataset_type="dummy", adapter_type="lora"):
     """Run centralized baseline training for comparison."""
     safe_print(f"\n{'='*70}")
     safe_print(f"▶ RUNNING CENTRALIZED BASELINE")
+    if adapter_type == 'qlora':
+        safe_print(f"  Mode: QLoRA Optimized")
     safe_print(f"{'='*70}")
 
     simulation_dir = Path(__file__).parent.parent / 'src' / 'simulation'
-    cmd = ['python3', 'diloco_trainer.py', '--centralized', '--real-data', '--num-steps', '10000']
+    cmd = [sys.executable, 'diloco_trainer.py', '--centralized']
+    
+    if dataset_type == "weedsgalore":
+        cmd.append('--real-data')
+    else:
+        cmd.append('--dummy-data')
+
+    if adapter_type == 'qlora':
+        cmd.extend(['--adapter-type', 'qlora'])
 
     start_time = time.time()
     try:
@@ -586,6 +593,14 @@ Dataset Configuration:
         help='Run centralized baseline before federated experiments'
     )
 
+    parser.add_argument(
+        '--adapter-type',
+        type=str,
+        default='lora',
+        choices=['lora', 'qlora'],
+        help='Adapter type to use (default: lora). Use "qlora" for 4-bit quantization.'
+    )
+
     args = parser.parse_args()
 
     # Determine dataset type
@@ -600,9 +615,11 @@ Dataset Configuration:
         dataset_type = DATASET_TYPE  # Use global config
 
     safe_print(f"\n📊 Dataset configuration: {dataset_type}")
+    safe_print(f"🔄 Adapter configuration: {args.adapter_type}")
+
 
     # Find config files
-    config_dir = Path('.')
+    config_dir = Path(__file__).parent
     config_files = sorted(config_dir.glob(args.pattern))
 
     # Filter by batch if specified
@@ -637,14 +654,14 @@ Dataset Configuration:
     start_time = time.time()
 
     if args.run_baseline:
-        baseline_result = run_centralized_baseline(args.timeout)
+        baseline_result = run_centralized_baseline(args.timeout, dataset_type, args.adapter_type)
         results.append(baseline_result)
 
     # Run federated experiments
     if args.sequential or args.workers == 1:
-        results.extend(run_experiments_sequential(config_files, args.timeout, dataset_type))
+        results.extend(run_experiments_sequential(config_files, args.timeout, dataset_type, args.adapter_type))
     else:
-        results.extend(run_experiments_parallel(config_files, args.workers, args.timeout, dataset_type))
+        results.extend(run_experiments_parallel(config_files, args.workers, args.timeout, dataset_type, args.adapter_type))
 
     total_time = time.time() - start_time
 
