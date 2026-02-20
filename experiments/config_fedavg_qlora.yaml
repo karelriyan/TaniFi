@@ -1,6 +1,6 @@
-# Scenario 3: DiLoCo + QLoRA
-# DiLoCo: rare sync, long local training per round
-# 10 farmers, 20 rounds, 500 local steps = 10,000 total steps/farmer
+# Scenario 2: FedAvg + QLoRA
+# FedAvg-like: frequent sync, many small rounds
+# 10 farmers, 200 rounds, 50 local steps = 10,000 total steps/farmer
 
 dataset:
   name: weedsgalore
@@ -28,8 +28,8 @@ adapter_config:
 
 federated:
   num_farmers: 10
-  num_rounds: 20
-  local_steps: 500      # Long local run → rare sync (DiLoCo-style)
+  num_rounds: 200
+  local_steps: 50       # Short local run → frequent sync (FedAvg-like)
   non_iid: true
   aggregation_method: fedavg
   min_samples_per_farmer: 10
@@ -50,6 +50,6 @@ simulation:
   simulate_intermittent_connectivity: false
 
 experiment:
-  name: diloco_qlora
-  description: "DiLoCo federated learning with QLoRA adapter (rare sync, long local steps)"
-  tags: [diloco, qlora, federated, weedsgalore]
+  name: fedavg_qlora
+  description: "FedAvg federated learning with QLoRA adapter (frequent sync)"
+  tags: [fedavg, qlora, federated, weedsgalore]

@@ -109,7 +109,9 @@ class DiLoCoCoordinator:
                 farmer = FarmerNode(node_id=i, base_model=self.base_model, data_subset=subset,
                                     device=self.device, total_rounds=self._total_rounds,
                                     warmup_rounds=self._warmup_rounds,
-                                    class_weights=self._class_weights)
+                                    class_weights=self._class_weights,
+                                    adapter_type=self.adapter_type,
+                                    adapter_config=self.adapter_config)
                 self.farmer_nodes.append(farmer)
         else:
             indices = np.random.permutation(total_size)

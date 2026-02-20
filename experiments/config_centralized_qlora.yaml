@@ -1,0 +1,41 @@
+# Scenario 1: Centralized + QLoRA
+# Used as baseline for comparison
+# Run with: --run-baseline --adapter-type qlora
+
+dataset:
+  name: weedsgalore
+  image_size: 224
+  train_split: 0.8
+  val_split: 0.1
+  test_split: 0.1
+
+device:
+  use_gpu: true
+  gpu_id: 0
+  num_workers: 8
+
+model:
+  name: YOLOv11ClassificationModel
+  num_classes: 3
+  lora_rank: 4
+
+adapter_type: qlora
+adapter_config:
+  r: 4
+  lora_alpha: 32
+  target_modules: ["classifier.2"]
+  lora_dropout: 0.05
+
+training:
+  batch_size: 64
+  num_epochs_baseline: 10
+  learning_rate: 0.001
+  optimizer: adamw
+  weight_decay: 0.0001
+  use_scheduler: true
+  scheduler_type: cosine
+
+experiment:
+  name: centralized_qlora
+  description: "Centralized training with QLoRA adapter"
+  tags: [centralized, qlora, weedsgalore]

@@ -49,7 +49,12 @@ class AdapterFactory:
         If *bitsandbytes* is unavailable, the function falls back to a standard
         LoRA adapter without quantization, ensuring the code runs in minimal
         environments (e.g., during CI or lightweight tests).
+
+        Important: the base_model is deep-copied before quantization so that
+        multiple farmers can each get their own independent 4-bit model without
+        mutating the shared original.
         """
+        import copy
         import warnings
         # If bitsandbytes is not installed, skip quantization.
         if bnb is None:
@@ -59,6 +64,9 @@ class AdapterFactory:
             )
             # Reuse the LoRA creation logic.
             return AdapterFactory._create_lora_adapter(base_model, config)
+
+        # Deep copy so each farmer gets fresh float32 weights to quantize
+        model_copy = copy.deepcopy(base_model)
 
         # ------------------------------------------------------------------
         # Helper: recursively replace Linear layers with 4‑bit equivalents.
@@ -84,7 +92,7 @@ class AdapterFactory:
                 else:
                     _replace_linear(child)
         
-        _replace_linear(base_model)
+        _replace_linear(model_copy)
         
         peft_config = LoraConfig(
             r=config.get("r", 4),
@@ -92,7 +100,7 @@ class AdapterFactory:
             target_modules=config.get("target_modules", ["classifier.2"]),
             lora_dropout=config.get("lora_dropout", 0.05),
         )
-        peft_model = get_peft_model(base_model, peft_config)
+        peft_model = get_peft_model(model_copy, peft_config)
         return QLoRAAdapter(peft_model)
 
 
