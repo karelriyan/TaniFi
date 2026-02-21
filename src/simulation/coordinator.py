@@ -66,7 +66,15 @@ class DiLoCoCoordinator:
 
     def initialize_farmers(self, dataset, non_iid=True, val_dataset=None, test_dataset=None,
                            total_rounds=20, warmup_rounds=5):
-        """Create farmer nodes with partitioned data."""
+        """Create farmer nodes with partitioned data.
+        
+        When non_iid=True and the dataset has >= 4 classes (combined dataset),
+        uses **Extreme Non-IID** label-based partitioning:
+            - First half of farmers → weed classes only (labels 0-2)
+            - Second half of farmers → disease classes only (labels 3-40)
+        This creates a realistic stress-test where farmer groups have completely
+        disjoint label distributions.
+        """
         self._total_rounds = total_rounds
         self._warmup_rounds = warmup_rounds
         print(f"\n Initializing {self.num_farmers} farmer nodes...")
@@ -81,58 +89,114 @@ class DiLoCoCoordinator:
             self.test_loader = DataLoader(test_dataset, batch_size=64, shuffle=False, num_workers=4)
 
         total_size = len(dataset)
-        min_samples_per_farmer = 1
-        if total_size < self.num_farmers * min_samples_per_farmer:
-            use_replacement = True
-        else:
-            use_replacement = False
+        num_classes = getattr(dataset, 'num_classes', 3)
 
-        if non_iid:
-            sizes = np.random.randint(
-                min_samples_per_farmer,
-                max(min_samples_per_farmer + 1, total_size // self.num_farmers * 3),
-                self.num_farmers
-            )
-            if use_replacement:
-                sizes = np.maximum(sizes, min_samples_per_farmer)
+        # ── Extreme Non-IID: label-based split ──────────────────────────
+        if non_iid and num_classes > 3:
+            print("   📊 Using EXTREME Non-IID (label-based) data distribution")
+            print("      Farmer 0-{}: Weed classes (0-2)".format(self.num_farmers // 2 - 1))
+            print("      Farmer {}-{}: Disease classes (3-40)".format(self.num_farmers // 2, self.num_farmers - 1))
+
+            # Extract all labels from the dataset
+            print("   Extracting labels for partitioning...")
+            all_labels = []
+            for i in range(total_size):
+                _, label = dataset[i]
+                if isinstance(label, (list, tuple, np.ndarray)):
+                    label = int(label[0]) if len(label) > 0 else 0
+                elif hasattr(label, 'item'):
+                    label = int(label.item()) if hasattr(label, 'numel') and label.numel() == 1 else int(label)
+                else:
+                    label = int(label)
+                all_labels.append(label)
+            all_labels = np.array(all_labels)
+
+            # Separate indices by domain
+            weed_indices = np.where(all_labels < 3)[0]       # WeedsGalore: classes 0, 1, 2
+            disease_indices = np.where(all_labels >= 3)[0]    # PlantVillage: classes 3-40
+
+            np.random.shuffle(weed_indices)
+            np.random.shuffle(disease_indices)
+
+            print(f"      Weed samples: {len(weed_indices)}, Disease samples: {len(disease_indices)}")
+
+            # Split farmers: first half → weeds, second half → diseases
+            num_weed_farmers = self.num_farmers // 2
+            num_disease_farmers = self.num_farmers - num_weed_farmers
+
+            weed_splits = np.array_split(weed_indices, num_weed_farmers)
+            disease_splits = np.array_split(disease_indices, num_disease_farmers)
+
+            farmer_indices = list(weed_splits) + list(disease_splits)
+
+            for i in range(self.num_farmers):
+                subset = Subset(dataset, farmer_indices[i].tolist())
+                domain = "Weed" if i < num_weed_farmers else "Disease"
+                farmer = FarmerNode(node_id=i, base_model=self.base_model, data_subset=subset,
+                                    device=self.device, total_rounds=self._total_rounds,
+                                    warmup_rounds=self._warmup_rounds,
+                                    class_weights=self._class_weights,
+                                    adapter_type=self.adapter_type,
+                                    adapter_config=self.adapter_config)
+                self.farmer_nodes.append(farmer)
+                print(f"      Farmer {i} ({domain}): {len(subset)} samples")
+
+        # ── Standard Non-IID or IID split ───────────────────────────────
+        else:
+            if non_iid:
+                print("   📊 Using standard random Non-IID data distribution")
             else:
-                sizes = (sizes / sizes.sum() * total_size).astype(int)
-                sizes = np.maximum(sizes, min_samples_per_farmer)
-        else:
-            samples_per_farmer = max(min_samples_per_farmer, total_size // self.num_farmers)
-            sizes = [samples_per_farmer] * self.num_farmers
+                print("   📊 Using IID (uniform) data distribution")
 
-        if use_replacement:
-            for i in range(self.num_farmers):
-                subset_indices = np.random.choice(total_size, size=sizes[i], replace=True)
-                subset = Subset(dataset, subset_indices.tolist())
-                farmer = FarmerNode(node_id=i, base_model=self.base_model, data_subset=subset,
-                                    device=self.device, total_rounds=self._total_rounds,
-                                    warmup_rounds=self._warmup_rounds,
-                                    class_weights=self._class_weights,
-                                    adapter_type=self.adapter_type,
-                                    adapter_config=self.adapter_config)
-                self.farmer_nodes.append(farmer)
-        else:
-            indices = np.random.permutation(total_size)
-            start_idx = 0
-            for i in range(self.num_farmers):
-                end_idx = min(start_idx + sizes[i], total_size)
-                if start_idx >= total_size:
-                    start_idx = 0
-                    end_idx = sizes[i]
-                subset_indices = indices[start_idx:end_idx]
-                subset = Subset(dataset, subset_indices.tolist())
-                farmer = FarmerNode(node_id=i, base_model=self.base_model, data_subset=subset,
-                                    device=self.device, total_rounds=self._total_rounds,
-                                    warmup_rounds=self._warmup_rounds,
-                                    class_weights=self._class_weights,
-                                    adapter_type=self.adapter_type,
-                                    adapter_config=self.adapter_config)
-                self.farmer_nodes.append(farmer)
-                start_idx = end_idx
+            min_samples_per_farmer = 1
+            use_replacement = total_size < self.num_farmers * min_samples_per_farmer
 
-        print(f"   Farmers initialized with {min(sizes)}-{max(sizes)} samples each")
+            if non_iid:
+                sizes = np.random.randint(
+                    min_samples_per_farmer,
+                    max(min_samples_per_farmer + 1, total_size // self.num_farmers * 3),
+                    self.num_farmers
+                )
+                if use_replacement:
+                    sizes = np.maximum(sizes, min_samples_per_farmer)
+                else:
+                    sizes = (sizes / sizes.sum() * total_size).astype(int)
+                    sizes = np.maximum(sizes, min_samples_per_farmer)
+            else:
+                samples_per_farmer = max(min_samples_per_farmer, total_size // self.num_farmers)
+                sizes = [samples_per_farmer] * self.num_farmers
+
+            if use_replacement:
+                for i in range(self.num_farmers):
+                    subset_indices = np.random.choice(total_size, size=sizes[i], replace=True)
+                    subset = Subset(dataset, subset_indices.tolist())
+                    farmer = FarmerNode(node_id=i, base_model=self.base_model, data_subset=subset,
+                                        device=self.device, total_rounds=self._total_rounds,
+                                        warmup_rounds=self._warmup_rounds,
+                                        class_weights=self._class_weights,
+                                        adapter_type=self.adapter_type,
+                                        adapter_config=self.adapter_config)
+                    self.farmer_nodes.append(farmer)
+            else:
+                indices = np.random.permutation(total_size)
+                start_idx = 0
+                for i in range(self.num_farmers):
+                    end_idx = min(start_idx + sizes[i], total_size)
+                    if start_idx >= total_size:
+                        start_idx = 0
+                        end_idx = sizes[i]
+                    subset_indices = indices[start_idx:end_idx]
+                    subset = Subset(dataset, subset_indices.tolist())
+                    farmer = FarmerNode(node_id=i, base_model=self.base_model, data_subset=subset,
+                                        device=self.device, total_rounds=self._total_rounds,
+                                        warmup_rounds=self._warmup_rounds,
+                                        class_weights=self._class_weights,
+                                        adapter_type=self.adapter_type,
+                                        adapter_config=self.adapter_config)
+                    self.farmer_nodes.append(farmer)
+                    start_idx = end_idx
+
+            print(f"   Farmers initialized with {min(sizes)}-{max(sizes)} samples each")
 
     def aggregate_shards(self, shards):
         """Aggregate shards from multiple farmers using weighted averaging based on each farmer's data size."""
