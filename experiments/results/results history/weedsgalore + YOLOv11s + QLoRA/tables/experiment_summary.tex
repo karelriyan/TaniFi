@@ -1,0 +1,31 @@
+% Experiment Summary
+% Generated automatically by TaniFi analysis notebook
+
+\documentclass{article}
+\usepackage{booktabs}
+\usepackage[margin=1in]{geometry}
+\begin{document}
+
+% === COPY START ===
+
+\begin{table}[h]
+\centering
+\caption{TaniFi QLoRA Experiment Summary}
+\label{tab:experiment_summary}
+\begin{tabular}{ll}
+\toprule
+Property & Value \\
+\midrule
+Training Scenarios & 3 (Centralized, FedAvg, DiLoCo) \\
+Adapter Type & QLoRA (4-bit NF4) \\
+Base Model & YOLOv11 Small (yolo11s-cls) \\
+FedAvg Config & 10f / 200r / 50s \\
+DiLoCo Config & 10f / 20r / 500s \\
+Avg Bandwidth Savings & 99.91\% \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% === COPY END ===
+
+\end{document}

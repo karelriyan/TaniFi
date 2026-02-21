@@ -62,7 +62,7 @@ def main():
         results.append(res)
 
     # Save results to a JSON file for later analysis
-    results_dir = Path(__file__).parent.parent / "experiments" / "results"
+    results_dir = Path(__file__).parent.parent.parent / "experiments" / "results"
     results_dir.mkdir(parents=True, exist_ok=True)
     timestamp = time.strftime("%Y%m%d_%H%M%S")
     out_path = results_dir / f"benchmark_{timestamp}.json"

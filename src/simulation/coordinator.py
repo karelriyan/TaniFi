@@ -255,7 +255,7 @@ class DiLoCoCoordinator:
 
         if 'vram_mb' in self.global_metrics:
             try:
-                results_dir = Path(__file__).parent.parent / 'experiments' / 'results'
+                results_dir = Path(__file__).parent.parent.parent / 'experiments' / 'results'
                 results_dir.mkdir(parents=True, exist_ok=True)
                 vram_path = results_dir / 'vram_usage.json'
                 with open(vram_path, 'w') as f:

@@ -210,7 +210,7 @@ def main_training(config_file=None, centralized=False, real_data=True, save_plot
             adapter_config=config.get('adapter_config', {})
         )
         # Save results
-        results_dir = Path(__file__).parent.parent / 'experiments' / 'results'
+        results_dir = Path(__file__).parent.parent.parent / 'experiments' / 'results'
         results_dir.mkdir(parents=True, exist_ok=True)
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         results = {
@@ -271,7 +271,7 @@ def main_training(config_file=None, centralized=False, real_data=True, save_plot
         )
         metrics = coordinator.train(num_rounds=config.get('total_rounds', 20), config=config)
         # Save federated results
-        results_dir = Path(__file__).parent.parent / 'experiments' / 'results'
+        results_dir = Path(__file__).parent.parent.parent / 'experiments' / 'results'
         results_dir.mkdir(parents=True, exist_ok=True)
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         results = {

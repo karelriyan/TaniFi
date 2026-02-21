@@ -3,7 +3,7 @@
 # Run with: --run-baseline --adapter-type qlora
 
 dataset:
-  name: weedsgalore
+  name: combined
   image_size: 224
   train_split: 0.8
   val_split: 0.1
@@ -16,7 +16,7 @@ device:
 
 model:
   name: YOLOv11ClassificationModel
-  num_classes: 3
+  num_classes: 41
   lora_rank: 4
 
 adapter_type: qlora
@@ -36,6 +36,6 @@ training:
   scheduler_type: cosine
 
 experiment:
-  name: centralized_qlora
-  description: "Centralized training with QLoRA adapter"
-  tags: [centralized, qlora, weedsgalore]
+  name: centralized_qlora_combined
+  description: "Centralized training with QLoRA adapter on combined WeedsGalore+PlantVillage"
+  tags: [centralized, qlora, combined, weedsgalore, plantvillage]
