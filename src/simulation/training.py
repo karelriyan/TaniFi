@@ -103,6 +103,12 @@ def train_centralized_baseline(model, train_dataset, val_dataset, test_dataset,
         history['val_f1'].append(val_f1)
 
         scheduler.step()
+
+        # VRAM usage logging (in MB) after each epoch
+        if torch.cuda.is_available():
+            vram_mb = torch.cuda.max_memory_allocated() / (1024 * 1024)
+            history.setdefault('vram_mb', []).append(round(vram_mb, 2))
+
         print(f"Epoch {epoch+1}/{num_epochs}: Train Loss {train_loss:.4f}, Train Acc {train_acc:.4f}, Val Loss {val_loss:.4f}, Val Acc {val_acc:.4f}")
 
     # Final test evaluation
@@ -221,6 +227,11 @@ def main_training(config_file=None, centralized=False, real_data=True, save_plot
             'training_type': 'centralized_baseline',
             'adapter_type': adapter_type,
         }
+        # Log peak VRAM in test_metrics too
+        if 'vram_mb' in history:
+            results['test_metrics']['vram_peak_mb'] = max(history['vram_mb'])
+            results['test_metrics']['vram_avg_mb'] = round(sum(history['vram_mb']) / len(history['vram_mb']), 2)
+            print(f"📊 VRAM: avg {results['test_metrics']['vram_avg_mb']:.1f} MB, peak {results['test_metrics']['vram_peak_mb']:.1f} MB")
         json_path = results_dir / f'centralized_baseline_{timestamp}.json'
         with open(json_path, 'w') as f:
             json.dump(results, f, indent=2)

@@ -1,0 +1,31 @@
+% 3-Way Comparison
+% Generated automatically by TaniFi analysis notebook
+
+\documentclass{article}
+\usepackage{booktabs}
+\usepackage[margin=1in]{geometry}
+\begin{document}
+
+% === COPY START ===
+
+\begin{table}[h]
+\centering
+\caption{Comparison of 3 QLoRA Training Scenarios}
+\label{tab:3way_comparison}
+\begin{tabular}{lrrr}
+\toprule
+Metric & Centralized & FedAvg & DiLoCo \\
+\midrule
+Final Train Loss & 1.1836 & 5.6326 & 4.6207 \\
+Val Accuracy & 0.7020 & 0.4428 & 0.4859 \\
+Val F1 (macro) & 0.6371 & 0.3750 & 0.3805 \\
+Test Accuracy & 0.7082 & N/A & N/A \\
+Test F1 (macro) & 0.6452 & N/A & N/A \\
+Bandwidth Saved (\%) & 0.00 & 99.90 & 99.90 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% === COPY END ===
+
+\end{document}
