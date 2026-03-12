@@ -1,16 +1,16 @@
 # Fdb version 4
-["bibtex mainTemplate_JIKI"] 1770009748.9716 "mainTemplate_JIKI.aux" "mainTemplate_JIKI.bbl" "mainTemplate_JIKI" 1770009753.33032 0
-  "./IEEEabrv.bib" 1770003815.66817 17781 22a7187dd8f9c9fdd01e2bc45cbcedf0 ""
-  "./IEEEexample.bib" 1770003815.66817 33879 f083ccc2e9c13993b1cce450541de484 ""
+["bibtex mainTemplate_JIKI"] 1771762706.1707 "mainTemplate_JIKI.aux" "mainTemplate_JIKI.bbl" "mainTemplate_JIKI" 1771813205.74254 0
+  "./IEEEabrv.bib" 1771550773.47715 18232 cd57b580451e33102a9ecb1f7638e9e3 ""
+  "./IEEEexample.bib" 1771550773.47715 34716 91a684e28919d19ad828c27bfa732872 ""
   "/usr/share/texlive/texmf-dist/bibtex/bst/ieeetran/IEEEtran.bst" 1440712899 57748 7c8250ecf02814ce6ddc0cdbb63df1dd ""
-  "mainTemplate_JIKI.aux" 1770009753.00036 2826 0d67cda477ab4a8c4aff048822ed6b0e "pdflatex"
+  "mainTemplate_JIKI.aux" 1771813205.35032 2826 56c393d42f7eb743238347fd9dfdc592 "pdflatex"
   (generated)
   "mainTemplate_JIKI.bbl"
   "mainTemplate_JIKI.blg"
   (rewritten before read)
-["pdflatex"] 1770009752.52643 "/home/karel/code/TaniFi/docs/Paper-JIKI-IEEE-Karel-Latex/mainTemplate_JIKI.tex" "mainTemplate_JIKI.pdf" "mainTemplate_JIKI" 1770009753.33047 0
+["pdflatex"] 1771813204.84436 "/home/karel/code/TaniFi/docs/Paper/Paper-JIKI-Latex-Karel/mainTemplate_JIKI.tex" "mainTemplate_JIKI.pdf" "mainTemplate_JIKI" 1771813205.74279 0
   "/etc/texmf/web2c/texmf.cnf" 1769757712.44627 475 c0e671620eb5563b2130f56340a5fde8 ""
-  "/home/karel/code/TaniFi/docs/Paper-JIKI-IEEE-Karel-Latex/mainTemplate_JIKI.tex" 1770009752.31276 33574 8580d3d2d9c31ea9c0103e3fed5a58ea ""
+  "/home/karel/code/TaniFi/docs/Paper/Paper-JIKI-Latex-Karel/mainTemplate_JIKI.tex" 1771813204.65913 35298 600565b89253d57921b59cf9285efa26 ""
   "/usr/share/texlive/texmf-dist/fonts/enc/dvips/base/8r.enc" 1165713224 4850 80dc9bab7f31fb78a000ccfed0e27cab ""
   "/usr/share/texlive/texmf-dist/fonts/enc/dvips/inconsolata/i4-ot1-0.enc" 1561323594 2496 4d35740f3a177992ff7b134746c0a1db ""
   "/usr/share/texlive/texmf-dist/fonts/map/fontname/texfonts.map" 1577235249 3524 cb3e574dea2d1052e39280babc910dc8 ""
@@ -129,14 +129,14 @@
   "/usr/share/texmf/web2c/texmf.cnf" 1707919699 40399 f2c302f7d2af602abb742093540a5834 ""
   "/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map" 1770006601.24121 5472669 54eaf61a88b6b7896ebd0dac973cb29c ""
   "/var/lib/texmf/web2c/pdftex/pdflatex.fmt" 1770006615 8215354 82c3af2bf3080df4b03df6454076e2ef ""
-  "IEEEtran.cls" 1770003815.66817 281933 2e4dcc8fc1804499882fe5531102390c ""
-  "balance.sty" 1770003815.67183 3199 892b7c9981cb40eb1537ab94cef10875 ""
-  "caption.sty" 1770003815.6755 26840 d12b9448a0b3102c3929ccd71cdf9f7c ""
-  "mainTemplate_JIKI.aux" 1770009753.00036 2826 0d67cda477ab4a8c4aff048822ed6b0e "pdflatex"
-  "mainTemplate_JIKI.bbl" 1770009749.08716 2658 65823b45e56b72fd54d262f1e8f65294 "bibtex mainTemplate_JIKI"
-  "mainTemplate_JIKI.out" 1770009753.00036 936 6222a9c7bc0a2ef025670472c1496e40 "pdflatex"
-  "mainTemplate_JIKI.tex" 1770009752.31276 33574 8580d3d2d9c31ea9c0103e3fed5a58ea ""
-  "pics/VGG-CNN-S.png" 1770003815.68283 6222 42123fd17de2855cc47c40cfa803a12e ""
+  "IEEEtran.cls" 1771550773.47715 288258 1bedcffeb8d9aa6ef232cb30f8cb9eb4 ""
+  "balance.sty" 1771550773.48099 3283 72410556ac2c3ed67f889efa898360a7 ""
+  "caption.sty" 1771550773.48866 27533 d9caf049d213963ebab17381be051f57 ""
+  "mainTemplate_JIKI.aux" 1771813205.35032 2826 56c393d42f7eb743238347fd9dfdc592 "pdflatex"
+  "mainTemplate_JIKI.bbl" 1771762706.27041 2658 65823b45e56b72fd54d262f1e8f65294 "bibtex mainTemplate_JIKI"
+  "mainTemplate_JIKI.out" 1771813205.35032 936 6222a9c7bc0a2ef025670472c1496e40 "pdflatex"
+  "mainTemplate_JIKI.tex" 1771813204.65913 35298 600565b89253d57921b59cf9285efa26 ""
+  "pics/VGG-CNN-S.png" 1771550773.4925 6222 42123fd17de2855cc47c40cfa803a12e ""
   (generated)
   "mainTemplate_JIKI.aux"
   "mainTemplate_JIKI.log"

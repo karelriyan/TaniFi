@@ -1,0 +1,4 @@
+[ZoneTransfer]
+ZoneId=3
+ReferrerUrl=https://claude.ai/chat/dc134cfe-e622-4173-bebd-4f81834ac663
+HostUrl=https://claude.ai/api/organizations/9903035d-2454-4263-916e-46ae02caf377/conversations/dc134cfe-e622-4173-bebd-4f81834ac663/wiggle/download-file?path=%2Fhome%2Fclaude%2Ftanifi-federated-learning%2Fnotebooks%2Fanalysis_template.ipynb
