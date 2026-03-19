@@ -23,6 +23,28 @@ class DiLoCoCoordinator:
     def __init__(self, base_model, num_farmers=10, local_steps=100, device='cpu',
                  adapter_type="lora", adapter_config=None,
                  outer_lr: float = 1.0, mu: float = 0.9):
+        """
+        Initialize the DiLoCo Coordinator.
+
+        Parameters
+        ----------
+        base_model : torch.nn.Module
+            The global base model (e.g., YOLOv11).
+        num_farmers : int, optional
+            Number of client nodes in the simulation, by default 10
+        local_steps : int, optional
+            Number of local training steps per round, by default 100
+        device : str, optional
+            Device string ('cpu' or 'cuda'), by default 'cpu'
+        adapter_type : str, optional
+            Type of PEFT adapter ('lora' or 'qlora'), by default "lora"
+        adapter_config : dict, optional
+            Configuration dictionary for the adapter, by default None
+        outer_lr : float, optional
+            Outer learning rate for the server-side momentum update, by default 1.0
+        mu : float, optional
+            Momentum factor for the Nesterov optimization, by default 0.9
+        """
         if num_farmers < 1:
             raise ValueError(f"num_farmers must be >= 1, got {num_farmers}")
         if local_steps < 1:
@@ -66,14 +88,30 @@ class DiLoCoCoordinator:
 
     def initialize_farmers(self, dataset, non_iid=True, val_dataset=None, test_dataset=None,
                            total_rounds=20, warmup_rounds=5):
-        """Create farmer nodes with partitioned data.
+        """
+        Create farmer nodes with partitioned data.
         
         When non_iid=True and the dataset has >= 4 classes (combined dataset),
         uses **Extreme Non-IID** label-based partitioning:
-            - First half of farmers → weed classes only (labels 0-2)
-            - Second half of farmers → disease classes only (labels 3-40)
+            - First half of farmers -> weed classes only (labels 0-2)
+            - Second half of farmers -> disease classes only (labels 3-40)
         This creates a realistic stress-test where farmer groups have completely
         disjoint label distributions.
+
+        Parameters
+        ----------
+        dataset : torch.utils.data.Dataset
+            The full training dataset to partition.
+        non_iid : bool, optional
+            Whether to partition data non-IID, by default True
+        val_dataset : torch.utils.data.Dataset, optional
+            Validation dataset, by default None
+        test_dataset : torch.utils.data.Dataset, optional
+            Test dataset, by default None
+        total_rounds : int, optional
+            Total federated rounds, by default 20
+        warmup_rounds : int, optional
+            Learning rate warmup rounds, by default 5
         """
         self._total_rounds = total_rounds
         self._warmup_rounds = warmup_rounds
@@ -199,7 +237,19 @@ class DiLoCoCoordinator:
             print(f"   Farmers initialized with {min(sizes)}-{max(sizes)} samples each")
 
     def aggregate_shards(self, shards):
-        """Aggregate shards from multiple farmers using weighted averaging based on each farmer's data size."""
+        """
+        Aggregate shards from multiple farmers using weighted averaging based on each farmer's data size.
+
+        Parameters
+        ----------
+        shards : list of dict
+            List containing the state dicts (shards) from each farmer node.
+
+        Returns
+        -------
+        dict
+            The aggregated parameters (state dict) averaged by dataset size.
+        """
         aggregated = {}
         total_samples = sum(len(farmer.data_subset) for farmer in self.farmer_nodes)
         for param_name in shards[0].keys():
@@ -211,7 +261,19 @@ class DiLoCoCoordinator:
         return aggregated
 
     def federated_round(self, round_num):
-        """Execute one round of DiLoCo federated learning."""
+        """
+        Execute one round of DiLoCo federated learning.
+
+        Parameters
+        ----------
+        round_num : int
+            The current federated round index.
+
+        Returns
+        -------
+        float
+            The average local loss across all farmers for this round.
+        """
         print(f"\n Round {round_num + 1}")
         print("   Local training phase...")
 
@@ -272,7 +334,23 @@ class DiLoCoCoordinator:
         return avg_loss
 
     def train(self, num_rounds=10, config=None, checkpoint_rounds=None):
-        """Run full federated learning training."""
+        """
+        Run full federated learning training loop.
+
+        Parameters
+        ----------
+        num_rounds : int, optional
+            Total number of rounds to simulate, by default 10
+        config : dict, optional
+            The configuration dictionary used, to be saved in checkpoints, by default None
+        checkpoint_rounds : list of int, optional
+            Specific rounds at which to save a model checkpoint, by default None
+
+        Returns
+        -------
+        dict
+            A dictionary containing the global metrics tracked over all rounds.
+        """
         training_start_time = time.time()
 
         if checkpoint_rounds is None:
@@ -331,7 +409,16 @@ class DiLoCoCoordinator:
         return self.global_metrics
 
     def save_checkpoint(self, round_num, config=None):
-        """Save checkpoint including metrics and model."""
+        """
+        Save checkpoint including metrics and model.
+
+        Parameters
+        ----------
+        round_num : int
+            The current round number.
+        config : dict, optional
+            The experiment configuration to store in the checkpoint, by default None
+        """
         checkpoint_dir = Path(__file__).parent.parent / 'checkpoints'
         checkpoint_dir.mkdir(exist_ok=True)
 
@@ -354,7 +441,19 @@ class DiLoCoCoordinator:
         print(f"  Checkpoint saved: {checkpoint_path}")
 
     def evaluate_final(self, test_loader=None):
-        """Evaluate all farmer models on test set and compute average."""
+        """
+        Evaluate all farmer models on test set and compute average.
+
+        Parameters
+        ----------
+        test_loader : torch.utils.data.DataLoader, optional
+            The test dataloader to evaluate against, by default None (uses self.test_loader)
+
+        Returns
+        -------
+        dict
+            A dictionary of test metrics including average loss, accuracy, and F1-macro.
+        """
         if test_loader is None:
             if self.test_loader is None:
                 raise ValueError("No test loader provided or initialized")

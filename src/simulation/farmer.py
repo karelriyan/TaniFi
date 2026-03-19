@@ -13,11 +13,40 @@ from .adapters import AdapterFactory
 from .utils import FAST_MODE
 
 class FarmerNode:
-    """Simulates a single farmer/agent node with local training."""
+    """
+    Simulates a single farmer/agent node with local training capabilities.
+    
+    This class handles local dataset handling, model optimization, AdamW
+    state maintenance, and extract/update logic for federated shards.
+    """
 
     def __init__(self, node_id, base_model, data_subset, device='cpu',
                  total_rounds=20, warmup_rounds=5, class_weights=None,
                  adapter_type="lora", adapter_config=None):
+        """
+        Initialize the FarmerNode.
+
+        Parameters
+        ----------
+        node_id : int
+            Unique identifier for the farmer node.
+        base_model : torch.nn.Module
+            The global base model to which the adapter will be attached.
+        data_subset : torch.utils.data.Subset
+            The specific subset of the dataset assigned to this node.
+        device : str, optional
+            Device string ('cpu' or 'cuda'), by default 'cpu'
+        total_rounds : int, optional
+            Total federated rounds expected, used for LR decay, by default 20
+        warmup_rounds : int, optional
+            Rounds for linear LR warmup, by default 5
+        class_weights : torch.Tensor, optional
+            Tensor of class weights for handling imbalanced data, by default None
+        adapter_type : str, optional
+            Type of PEFT adapter ('lora' or 'qlora'), by default "lora"
+        adapter_config : dict, optional
+            Configuration dictionary for the adapter, by default None
+        """
         self.node_id = node_id
         self.device = device
         self.model = AdapterFactory.create_adapter(
@@ -81,7 +110,19 @@ class FarmerNode:
             param_group['lr'] = lr
 
     def local_training(self, num_steps=500):
-        """Perform local training for specified number of steps."""
+        """
+        Perform local training loop for a specified number of steps.
+
+        Parameters
+        ----------
+        num_steps : int, optional
+            Number of local optimization steps to take before returning, by default 500
+
+        Returns
+        -------
+        float
+            The average training loss observed continuously over the steps.
+        """
         self._update_lr()
         self.model.train()
         step = 0
@@ -116,11 +157,25 @@ class FarmerNode:
         return avg_loss
 
     def get_shard(self):
-        """Extract the trained 'shard' (LoRA adapter parameters)."""
+        """
+        Extract the trained 'shard' (e.g., LoRA adapter parameters).
+
+        Returns
+        -------
+        dict
+            A state dict containing only the trainable parameters (the adapter).
+        """
         return self.model.get_adapter_params()
 
     def update_shard(self, aggregated_params):
-        """Receive and apply aggregated parameters from global update."""
+        """
+        Receive and apply aggregated parameters from the global central update.
+
+        Parameters
+        ----------
+        aggregated_params : dict
+            State dict of aggregated adapter parameters from the coordinator.
+        """
         self.model.set_adapter_params(aggregated_params)
         self.sync_count += 1
 

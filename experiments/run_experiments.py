@@ -409,7 +409,11 @@ def save_execution_log(results, output_file='execution_log.json', dataset_type="
         'results': results
     }
 
-    output_path = Path(output_file)
+    # Always save to the experiments/results directory to avoid root clutter
+    results_dir = Path(__file__).parent / 'results'
+    results_dir.mkdir(parents=True, exist_ok=True)
+    output_path = results_dir / output_file
+    
     with open(output_path, 'w') as f:
         json.dump(log_data, f, indent=2)
 

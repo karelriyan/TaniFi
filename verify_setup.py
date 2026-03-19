@@ -67,7 +67,7 @@ def check_directory_structure():
     
     required_dirs = [
         'data/weedsgalore',
-        'models/checkpoints',
+        'src/checkpoints',
         'experiments/results',
         'experiments/results/plots',
         'experiments/results/tables',
@@ -141,20 +141,15 @@ def check_dataset():
 
 
 def check_model_files():
-    """Check if required model files exist"""
-    print_header("Checking Model Files")
+    """Check if YOLO model components can be loaded."""
+    print_header("Checking Model Environment")
     
-    project_root = Path(__file__).parent
-    yolo_model = project_root / 'yolo11s-cls.pt'
-    
-    if yolo_model.exists():
-        print(f"✅ YOLOv11 classification model found")
-        size_mb = yolo_model.stat().st_size / (1024 * 1024)
-        print(f"   Size: {size_mb:.1f} MB")
+    try:
+        from ultralytics import YOLO
+        print(f"✅ Ultralytics YOLO module ready for auto-download if needed")
         return True
-    else:
-        print(f"❌ YOLOv11 model not found at: {yolo_model}")
-        print("   Download with: wget https://github.com/ultralytics/assets/releases/download/v8.1.0/yolo11s-cls.pt")
+    except ImportError:
+        print(f"❌ Ultralytics not installed")
         return False
 
 
